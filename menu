@@ -1,2 +1,0 @@
-?package(comedirecord):needs="X11" section="Apps/Technical"\
-  title="comedirecord" command="comedirecord"
