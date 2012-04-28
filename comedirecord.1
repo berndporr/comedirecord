@@ -1,0 +1,46 @@
+.TH COMEDIRECORD "1" "April 2012" "comedirecord 1.2.2" "User Commands"
+.SH NAME
+comedirecord \- an oscilloscope for COMEDI
+.SH SYNOPSIS
+.B comedirecord
+[\fIOPTION\fR]...
+.SH DESCRIPTION
+A simple oscilloscope application which displays data from COMEDI
+DAQ cards. It can run with multiple cards and save the data
+in a single text file which then can be imported into OCTAVE, scilab,
+gnuplot and MATLAB. A 50Hz notch filter and a DC filter can be
+used to improve the data being displayed. Comedirecord can
+also listen on a TCP port which allows the logging of additional
+information from external programs or just logging comments when
+connected to telnet.
+.TP
+\-f FILENAME
+save data into FILENAME
+.TP
+\-c CHANNELS
+sets the number of channels
+.TP
+\-n FREQUENCY
+sets the notch filter frequency
+.TP
+\-d DEVICES
+sets the maximum number of comedi devices (default is the all
+connected COMEDI devices are used)
+.TP
+\-r SAMPLINGRATE
+sets the sampling rate
+.TP
+\-p PORT
+sets the TCP port for receiving external data, for example via telnet
+.TP
+\-t TEXT_APPENDED
+default text appended when external data via TCP hasn't been received
+or when external data has a lower sampling rate than the comedirecord
+.SH "SEE ALSO"
+More documentation can be found on
+http://www.linux-usb-daq.co.uk/software2/comedi-record/
+in particular examples describing how to import data into octave, gnuplot
+or MATLAB.
+.SH AUTHOR
+comedirecord was written by Bernd Porr <berndporr@f2s.com>.
+
