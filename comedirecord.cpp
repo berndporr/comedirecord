@@ -272,6 +272,7 @@ ComediRecord::~ComediRecord() {
 
 void ComediRecord::disableControls() {
 	filePushButton->setEnabled( false );
+	rawCheckbox->setEnabled( false );
 	int n_devs = comediScope->getNcomediDevices();
 	int channels = comediScope->getNchannels();
 	for(int n=0;n<n_devs;n++) {
@@ -284,6 +285,7 @@ void ComediRecord::disableControls() {
 
 void ComediRecord::enableControls() {
 	filePushButton->setEnabled( true );
+	rawCheckbox->setEnabled( true );
 	int n_devs = comediScope->getNcomediDevices();
 	int channels = comediScope->getNchannels();
 	for(int n=0;n<n_devs;n++) {
