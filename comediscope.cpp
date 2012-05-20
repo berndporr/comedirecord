@@ -1,6 +1,6 @@
 /**
  * comediscope.h
- * (c) 2004-2011 Bernd Porr, no warranty, GNU-public license
+ * (c) 2004-2012 Bernd Porr, no warranty, GNU-public license
  **/
 #include <QTimer>
 #include <QPainter>
@@ -39,6 +39,11 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	tb_counter=tb_init;
 	comediRecord=comediRecordTmp;
 	rec_file=NULL;
+	hdf5table_id=0;
+	hdf5floatBuffer=NULL;
+	hdf5valid=0;
+	recordInHDF5=0;
+
 	rec_filename=new QString();
 	recorded=0;
 
@@ -227,7 +232,7 @@ void ComediScope::setNotchFrequency(float f) {
 
 void ComediScope::updateTime() {
 	QString s;
-	if (!rec_file) {
+	if ((!rec_file)&&(!hdf5valid)) {
 		if (rec_filename->isEmpty()) {
 			s.sprintf("comedirecord");
 		} else {
@@ -256,13 +261,11 @@ void ComediScope::updateTime() {
 }
 
 
-int ComediScope::setFilename(QString name,int csv) {
-	if (rec_file) { // recording or pause
-		fclose(rec_file);
-		rec_file=NULL;
-	}
+int ComediScope::setFilename(QString name,int csv,int hdf5) {
 	(*rec_filename)=name;
 	recorded=0;
+	recordInHDF5=hdf5;
+	if (recordInHDF5) return 0;
 	if (csv) {
 		separator=',';
 	} else {
@@ -272,16 +275,17 @@ int ComediScope::setFilename(QString name,int csv) {
 }
 
 
-
-
 void ComediScope::writeFile() {
-	if (!rec_file) return;
 	if (comediRecord->
 	    rawCheckbox->isChecked()) {
-		fprintf(rec_file,"%ld",nsamples);
+		if (rec_file) fprintf(rec_file,"%ld",nsamples);
+		if (hdf5floatBuffer) hdf5floatBuffer[0] = nsamples;
 	} else {
-		fprintf(rec_file,"%f",((float)nsamples)/((float)sampling_rate));
+		float t = ((float)nsamples)/((float)sampling_rate);
+		if (rec_file) fprintf(rec_file,"%f",t);
+		if (hdf5floatBuffer) hdf5floatBuffer[0] = t;
 	}
+	int chIdx = 1;
 	for(int n=0;n<nComediDevices;n++) {
 		for(int i=0;i<channels_in_use;i++) {
 			if (comediRecord->
@@ -289,28 +293,82 @@ void ComediScope::writeFile() {
 				) {
 				if (comediRecord->
 				    rawCheckbox->isChecked()) {
-					fprintf(rec_file,
-						"%c%d",separator,(int)(daqData[n][i]));
+					if (rec_file) 
+						fprintf(rec_file,
+							"%c%d",
+							separator,
+							(int)(daqData[n][i]));
+					if (hdf5floatBuffer) 
+						hdf5floatBuffer[chIdx++] = daqData[n][i];
 				} else {
 					float phy=comedi_to_phys((lsampl_t)(daqData[n][i]),
 								 crange[n],
 								 maxdata[n]);
-					fprintf(rec_file,"%c%f",separator,phy);
+					if (rec_file) 
+						fprintf(rec_file,"%c%f",separator,phy);
+					if (hdf5floatBuffer)
+						hdf5floatBuffer[chIdx++] = phy;
 				}
 			}
 		}
 	}
 	if (ext_data_receive) {
-		fprintf(rec_file,"%c%s",separator,ext_data_receive->getData());
+		if (rec_file) 
+			fprintf(rec_file,
+				"%c%s",
+				separator,
+				ext_data_receive->getData());
 	}
-	fprintf(rec_file,"\n");
+	if (rec_file) fprintf(rec_file,"\n");
+	if ((hdf5valid)&&(recordInHDF5)&&(hdf5floatBuffer)) {
+		H5PTappend( hdf5table_id, 1, hdf5floatBuffer );
+	}
 }
 
 void ComediScope::startRec() {
-	if (!recorded) {
+	if (recorded) return;
+	comediRecord->disableControls();
+	nsamples=0;
+	if (recordInHDF5) {
+		if (hdf5floatBuffer) delete[] hdf5floatBuffer;
+		// create the buffer
+		hdf5floatBuffer = new float[num_channels + 1];
+		
+		// create the compound
+		hdf5compoundtype = H5Tcreate (H5T_COMPOUND,
+					 sizeof(float)*(num_channels+1)
+			);
+		
+		herr_t status = H5Tinsert (hdf5compoundtype,
+					   "timestamp in seconds",
+					   0, 
+					   H5T_NATIVE_FLOAT);
+		
+		for(int i=0; i< num_channels; i++ ) {
+			char tmp[256];
+			sprintf(tmp,"ch%d[volts]",i);
+			status = H5Tinsert (hdf5compoundtype, 
+					    tmp, 
+					    sizeof(float)*(i+1),
+					    H5T_NATIVE_FLOAT);
+		}
+		
+		hdf5file_id = H5Fcreate (
+			rec_filename->toLocal8Bit().constData(), 
+			H5F_ACC_EXCL,
+			H5P_DEFAULT, H5P_DEFAULT);
+		
+		hdf5table_id= H5PTcreate_fl(
+			hdf5file_id,
+			"/comedirecord", 
+			hdf5compoundtype, 
+			500,
+			0);
+		
+		hdf5valid = 1;
+	} else {
 		rec_file=fopen(rec_filename->toLocal8Bit().constData(),
 			       "wt");
-		nsamples=0;
 	}
 }
 
@@ -321,6 +379,16 @@ void ComediScope::stopRec() {
 		rec_file=NULL;
 		recorded=1;
 	}
+	if (hdf5valid) {
+		if (hdf5floatBuffer) delete[] hdf5floatBuffer;
+		H5PTclose( hdf5table_id );
+		H5PTclose( hdf5file_id );
+		H5Tclose( hdf5compoundtype );
+		hdf5valid = 0;
+	}
+	comediRecord->enableControls();
+	if (rec_filename) delete rec_filename;
+	rec_filename = new QString();
 }
 
 
@@ -333,7 +401,7 @@ void ComediScope::paintData(float** buffer) {
 	QPen penWhite(Qt::white,2);
 	int w = width();
 	int h = height();
-	int num_channels=0;
+	num_channels=0;
 
 	for(int n=0;n<nComediDevices;n++) {
 		for(int i=0;i<channels_in_use;i++) {

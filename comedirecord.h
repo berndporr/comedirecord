@@ -52,7 +52,11 @@ public:
 /**
  * Sets the filename for the data-file
  **/
-    void setFilename(QString fn,int csv);
+	void setFilename(QString fn,int csv,int hdf5);
+
+public:
+	void enableControls();
+	void disableControls();
 
 public:
 

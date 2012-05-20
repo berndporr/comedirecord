@@ -260,7 +260,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 
 	changeTB();
 
-	if (filename) setFilename(filename,0);
+	if (filename) setFilename(filename,0,0);
 
 	comediScope->startDAQ();
 }
@@ -270,8 +270,32 @@ ComediRecord::~ComediRecord() {
 }
 
 
-void ComediRecord::setFilename(QString fn,int csv) {
-	if (comediScope->setFilename(fn,csv)==-1) {
+void ComediRecord::disableControls() {
+	filePushButton->setEnabled( false );
+	int n_devs = comediScope->getNcomediDevices();
+	int channels = comediScope->getNchannels();
+	for(int n=0;n<n_devs;n++) {
+		for(int i=0;i<channels;i++) {
+			channelCheckbox[n][i]->setEnabled( false );
+		}
+	}
+}
+
+
+void ComediRecord::enableControls() {
+	filePushButton->setEnabled( true );
+	int n_devs = comediScope->getNcomediDevices();
+	int channels = comediScope->getNchannels();
+	for(int n=0;n<n_devs;n++) {
+		for(int i=0;i<channels;i++) {
+			channelCheckbox[n][i]->setEnabled( true );
+		}
+	}
+}
+
+
+void ComediRecord::setFilename(QString fn,int csv,int hdf5) {
+	if (comediScope->setFilename(fn,csv,hdf5)==-1) {
 		return;
 	}
 	QString tmp;
@@ -285,7 +309,8 @@ void ComediRecord::enterFileName() {
 	QFileDialog::Options options;
 	QString filters(tr("space separated values (*.txt);;"
 			   "space separated values (*.dat);;"
-			   "comma separated values (*.csv)"
+			   "comma separated values (*.csv);;"
+			   "hierachical data format (*.hdf)"
 				));
 
 	QFileDialog dialog(this);
@@ -301,7 +326,8 @@ void ComediRecord::enterFileName() {
                         fileName=fileName+extension;
                 }
 		int isCSV = extension.indexOf("csv");
-                setFilename(QString(fileName),isCSV>-1);
+		int isHDF5 = extension.indexOf("hdf");
+                setFilename(QString(fileName),isCSV>-1,isHDF5>-1);
         }
 }
 
