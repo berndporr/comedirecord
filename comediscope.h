@@ -85,6 +85,11 @@ private:
  **/
     void        writeFile();
 
+
+    void        writeASCIIFile();
+    void        writeHDF5File();
+
+
 private:
     /**
      * file descriptor for /dev/comedi0

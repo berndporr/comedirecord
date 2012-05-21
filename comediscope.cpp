@@ -288,14 +288,45 @@ int ComediScope::setFilename(QString name,int csv,int hdf5) {
 }
 
 
-void ComediScope::writeFile() {
+void ComediScope::writeASCIIFile() {
+	if (!rec_file) return;
+	if (comediRecord->
+	    rawCheckbox->isChecked()) {
+		fprintf(rec_file,"%ld",nsamples);
+	} else {
+		fprintf(rec_file,"%f",((float)nsamples)/((float)sampling_rate));
+	}
+	for(int n=0;n<nComediDevices;n++) {
+		for(int i=0;i<channels_in_use;i++) {
+			if (comediRecord->
+			    channelCheckbox[n][i]->isChecked()
+				) {
+				if (comediRecord->
+				    rawCheckbox->isChecked()) {
+					fprintf(rec_file,
+						"%c%d",separator,(int)(daqData[n][i]));
+				} else {
+					float phy=comedi_to_phys((lsampl_t)(daqData[n][i]),
+								 crange[n],
+								 maxdata[n]);
+					fprintf(rec_file,"%c%f",separator,phy);
+				}
+			}
+		}
+	}
+	if (ext_data_receive) {
+		fprintf(rec_file,"%c%s",separator,ext_data_receive->getData());
+	}
+	fprintf(rec_file,"\n");
+}
+
+void ComediScope::writeHDF5File() {
+	if ((!hdf5valid)||(!recordInHDF5)||(!hdf5floatBuffer)) return;
 	float t = ((float)nsamples)/((float)sampling_rate);
 	if (comediRecord->
 	    rawCheckbox->isChecked()) {
-		if (rec_file) fprintf(rec_file,"%ld",nsamples);
 		if (hdf5floatBuffer) hdf5floatBuffer[0] = t;
 	} else {
-		if (rec_file) fprintf(rec_file,"%f",t);
 		if (hdf5floatBuffer) hdf5floatBuffer[0] = t;
 	}
 	int chIdx = 1;
@@ -306,36 +337,28 @@ void ComediScope::writeFile() {
 				) {
 				if (comediRecord->
 				    rawCheckbox->isChecked()) {
-					if (rec_file) 
-						fprintf(rec_file,
-							"%c%d",
-							separator,
-							(int)(daqData[n][i]));
-					if (hdf5floatBuffer) 
-						hdf5floatBuffer[chIdx++] = daqData[n][i];
+					fprintf(rec_file,
+						"%c%d",
+						separator,
+						(int)(daqData[n][i]));
 				} else {
 					float phy=comedi_to_phys((lsampl_t)(daqData[n][i]),
 								 crange[n],
 								 maxdata[n]);
-					if (rec_file) 
-						fprintf(rec_file,"%c%f",separator,phy);
-					if (hdf5floatBuffer)
-						hdf5floatBuffer[chIdx++] = phy;
+					hdf5floatBuffer[chIdx++] = phy;
 				}
 			}
 		}
 	}
 	if (ext_data_receive) {
-		if (rec_file) 
-			fprintf(rec_file,
-				"%c%s",
-				separator,
-				ext_data_receive->getData());
+		hdf5floatBuffer[chIdx++] = atof(ext_data_receive->getData());
 	}
-	if (rec_file) fprintf(rec_file,"\n");
-	if ((hdf5valid)&&(recordInHDF5)&&(hdf5floatBuffer)) {
-		H5PTappend( hdf5table_id, 1, hdf5floatBuffer );
-	}
+	H5PTappend( hdf5table_id, 1, hdf5floatBuffer );
+}
+
+void ComediScope::writeFile() {
+	writeHDF5File();
+	writeASCIIFile();
 }
 
 void ComediScope::startRec() {
@@ -344,12 +367,18 @@ void ComediScope::startRec() {
 	nsamples=0;
 	if (recordInHDF5) {
 		// create the buffer
+
+		int tot_num_channels = num_channels + 1;
+		if (ext_data_receive) {
+			tot_num_channels++;
+		}
+
 		if (hdf5floatBuffer) delete[] hdf5floatBuffer;
-		hdf5floatBuffer = new float[num_channels+1];
+		hdf5floatBuffer = new float[tot_num_channels];
 		
 		// create the compound
 		hdf5compoundtype = H5Tcreate (H5T_COMPOUND,
-					      sizeof(float)*(num_channels+1)
+					      sizeof(float)*(tot_num_channels)
 			);
 		
 		herr_t status = H5Tinsert (hdf5compoundtype,
@@ -378,6 +407,13 @@ void ComediScope::startRec() {
 					idxNo++;
 				}
 			}
+		}
+
+		if (ext_data_receive) {
+			status = H5Tinsert (hdf5compoundtype, 
+					    "ext_data", 
+					    sizeof(float)*idxNo,
+					    H5T_NATIVE_FLOAT);
 		}
 
 		hdf5file_id = H5Fcreate (
