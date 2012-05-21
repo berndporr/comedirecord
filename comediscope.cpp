@@ -353,7 +353,7 @@ void ComediScope::startRec() {
 			);
 		
 		herr_t status = H5Tinsert (hdf5compoundtype,
-					   "t/sec",
+					   "t_sec",
 					   0, 
 					   H5T_NATIVE_FLOAT);
 
@@ -366,10 +366,10 @@ void ComediScope::startRec() {
 					if (comediRecord->
 					    rawCheckbox->isChecked()) {
 						sprintf(tmp,
-							"dev%dch%d[raw]",n,i);	
+							"dev%dch%d_raw",n,i);	
 					} else {
 						sprintf(tmp,
-							"dev%dch%d[u/V]",n,i);
+							"dev%dch%d_v",n,i);
 					}
 					status = H5Tinsert (hdf5compoundtype, 
 							    tmp, 
