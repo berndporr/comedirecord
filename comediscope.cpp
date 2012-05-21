@@ -38,13 +38,20 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	tb_init=1;
 	tb_counter=tb_init;
 	comediRecord=comediRecordTmp;
+
+	// for ASCII
 	rec_file=NULL;
+
+	// for HDF5
 	hdf5table_id=0;
 	hdf5floatBuffer=NULL;
 	hdf5valid=0;
 	recordInHDF5=0;
 
+	// filename
 	rec_filename=new QString();
+
+	// flag if data has been recorded and we need a new filename
 	recorded=0;
 
 	if (port_for_ext_data>0) {
@@ -214,7 +221,7 @@ ComediScope::~ComediScope() {
 	}
 	if (hdf5valid) {
 		H5PTclose( hdf5table_id );
-		H5PTclose( hdf5file_id );
+		H5Fclose( hdf5file_id );
 		H5Tclose( hdf5compoundtype );
 	}
 }
@@ -405,7 +412,7 @@ void ComediScope::stopRec() {
 			hdf5floatBuffer = NULL;
 		}
 		H5PTclose( hdf5table_id );
-		H5PTclose( hdf5file_id );
+		H5Fclose( hdf5file_id );
 		H5Tclose( hdf5compoundtype );
 		hdf5valid = 0;
 	}
