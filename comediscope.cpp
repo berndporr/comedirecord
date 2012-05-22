@@ -25,6 +25,7 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 			  float f, 
 			  int port_for_ext_data, 
 			  int maxComediDevs,
+			  int first_dev_no,
 			  int req_sampling_rate,
 			  const char* defaultTextStringForMissingExtData
 	)
@@ -81,7 +82,7 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	nComediDevices = 0;
 	for(int devNo=0;devNo<maxComediDevs;devNo++) {
 		char filename[128];
-		sprintf(filename,"/dev/comedi%d",devNo);
+		sprintf(filename,"/dev/comedi%d",devNo+first_dev_no);
 		dev[devNo] = comedi_open(filename);
 		if(dev[devNo]){
 			nComediDevices = devNo + 1;
@@ -442,7 +443,7 @@ void ComediScope::stopRec() {
 		rec_file=NULL;
 		recorded=1;
 	}
-	if (hdf5valid) {
+	if (hdf5valid&&recordInHDF5) {
 		if (hdf5floatBuffer) {
 			delete[] hdf5floatBuffer;
 			hdf5floatBuffer = NULL;

@@ -39,6 +39,7 @@ public:
 		 float notchF = 50,
 		 int port_for_ext_data = 0,
 		 int maxComediDevices = 1,
+		 int first_dev_no = 0,
 		 int req_sampling_rate = 1000,
 		 const char *defaultTextStringForMissingExtData = NULL
 	    );

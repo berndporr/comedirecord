@@ -38,6 +38,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			    float notchF,
 			    int port,
 			    int num_of_devices,
+			    int first_dev_no,
 			    int requrested_sampling_rate,
 			    const char* defaultTextStringForMissingExtData,
 			    const char* filename
@@ -49,6 +50,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 				    notchF,
 				    port,
 				    num_of_devices,
+				    first_dev_no,
 				    requrested_sampling_rate,
 				    defaultTextStringForMissingExtData
 		);
@@ -424,11 +426,12 @@ int main( int argc, char **argv )
 	float notch = 50;
 	int port = 0;
 	int sampling_rate = 1000;
+	int first_dev_no = 0;
 	const char* defaultTextStringForMissingExtData = NULL;
 
 	QApplication a( argc, argv );		// create application object
 
-	while (-1 != (c = getopt(argc, argv, "t:r:d:p:f:c:n:h"))) {
+	while (-1 != (c = getopt(argc, argv, "l:t:r:d:p:f:c:n:h"))) {
 		switch (c) {
 		case 'f':
 			filename = optarg;
@@ -438,6 +441,9 @@ int main( int argc, char **argv )
 			break;
 		case 'd':
 			num_of_devices = atoi(optarg);
+			break;
+		case 'l':
+			first_dev_no = atoi(optarg);
 			break;
 		case 'r':
 			sampling_rate = atoi(optarg);
@@ -458,6 +464,7 @@ int main( int argc, char **argv )
                        "   -c <number of channels>\n"
                        "   -n <notch_frequency> \n"
 		       "   -d <max number of comedi devices>\n"
+		       "   -l <lowest comedi device number used>\n"
                        "   -r <sampling rate> \n"
 		       "   -p <TCP port for receiving external data>\n"
 		       "   -t <default outp when external data hasn't been rec'd>\n"
@@ -471,6 +478,7 @@ int main( int argc, char **argv )
 				  notch,
 				  port,
 				  num_of_devices,
+				  first_dev_no,
 				  sampling_rate,
 				  defaultTextStringForMissingExtData,
 				  filename

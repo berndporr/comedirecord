@@ -38,6 +38,7 @@ public:
 		      float notch = 50.0,
 		      int port = 0,
 		      int num_of_devices = 1,
+		      int first_dev_no = 0,
 		      int requested_sampling_rate = 1000,
 		      const char* defaultTextStringForMissingExtData = NULL,
 		      const char* filename = NULL
