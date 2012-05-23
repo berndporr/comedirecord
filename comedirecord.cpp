@@ -15,6 +15,7 @@
 #include <QGroupBox>
 #include <QFileDialog>
 #include <QSizePolicy>
+#include <QSettings>
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -181,19 +182,18 @@ ComediRecord::ComediRecord( QWidget *parent,
 	notchGroupBox->setStyleSheet(styleSheet);
 	QHBoxLayout *notchLayout = new QHBoxLayout();
 	char tmp[128];
-	sprintf(tmp,"%2.0f notch",notchF);
+	sprintf(tmp,"%2.0fHz notch",notchF);
 	filterCheckbox=new QCheckBox( tmp );
 	filterCheckbox->setChecked( FALSE );
 	notchLayout->addWidget(filterCheckbox);
 	commentTextEdit=new QTextEdit();
 	QFont commentFont("Courier",10);
-	commentFont.setBold(FALSE);
 	QFontMetrics commentMetrics(commentFont);
 	commentTextEdit->setMaximumHeight ( commentMetrics.height() );
 	commentTextEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	commentTextEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	commentTextEdit->setFont(commentFont);
-	QLabel *l=new QLabel("Comment:");
+	QLabel *l=new QLabel("| Comment:");
 	notchLayout->addWidget(l);
 	notchLayout->addWidget(commentTextEdit);
        	notchGroupBox->setLayout(notchLayout);
@@ -248,10 +248,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 	tbInfoTextEdit = new QTextEdit(tbgrp);
 	tbInfoTextEdit->setFont (tbFont);
 	QFontMetrics metricsTb(tbFont);
-	tbInfoTextEdit->setMaximumSize (3*metricsTb.width("99999 sec")/2,
-					3*metricsTb.height()/2);
+	tbInfoTextEdit->setMaximumHeight ( commentMetrics.height() * 1.5 );
 	tbInfoTextEdit->setReadOnly(TRUE);
-	tbInfoTextEdit->setLineWidth(1);
 	tbInfoTextEdit->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 	tbLayout->addWidget(tbInfoTextEdit);
 
@@ -440,6 +438,20 @@ int main( int argc, char **argv )
 	int first_dev_no = 0;
 	const char* defaultTextStringForMissingExtData = NULL;
 
+	QSettings settings(QSettings::IniFormat, 
+			   QSettings::UserScope,
+			   "USB-DUX",
+			   "comedirecord");
+
+	settings.beginGroup("settings");
+	num_of_channels = settings.value("num_of_channels",0).toInt();
+	num_of_devices = settings.value("num_of_devices",16).toInt();
+	sampling_rate = settings.value("sampling_rate",1000).toInt();
+	first_dev_no = settings.value("first_dev_no",0).toInt();
+	port = settings.value("port",0).toInt();
+	notch = settings.value("notch",50).toFloat();
+	settings.endGroup();
+
 	QApplication a( argc, argv );		// create application object
 
 	while (-1 != (c = getopt(argc, argv, "l:t:r:d:p:f:c:n:h"))) {
@@ -483,6 +495,15 @@ int main( int argc, char **argv )
 		exit(1);
 		}
 	}
+
+	settings.beginGroup("settings");
+	settings.setValue("num_of_channels",num_of_channels);
+	settings.setValue("num_of_devices",num_of_devices);
+	settings.setValue("sampling_rate",sampling_rate);
+	settings.setValue("first_dev_no",first_dev_no);
+	settings.setValue("port",port);
+	settings.setValue("notch",notch);
+	settings.endGroup();
 
 	ComediRecord comediRecord(0,
 				  num_of_channels,
