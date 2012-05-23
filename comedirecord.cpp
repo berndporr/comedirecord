@@ -137,8 +137,12 @@ ComediRecord::ComediRecord( QWidget *parent,
 			voltageTextEdit[n][i]->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(voltageTextEdit[n][i]);
 			voltageTextEdit[n][i]->setFont(voltageFont);
+			char tmpVolt[128];
+			sprintf(tmpVolt,
+				" "VOLT_FORMAT_STRING" ",
+				comediScope->crange[n][i].max);
 			voltageTextEdit[n][i]->setMaximumSize
-				(voltageMetrics.width("+4.00000000V "),
+				(voltageMetrics.width(tmpVolt),
 				 (int)(voltageMetrics.height()*1.1));
 			voltageTextEdit[n][i]->
 				setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff ); 
@@ -425,6 +429,7 @@ void ComediRecord::changeTB() {
 	comediScope->setTB(tb_us);
 }
 
+#define SETTINGS_STRING "settings"
 
 int main( int argc, char **argv )
 {
@@ -443,12 +448,11 @@ int main( int argc, char **argv )
 			   "USB-DUX",
 			   "comedirecord");
 
-	settings.beginGroup("settings");
+	settings.beginGroup(SETTINGS_STRING);
 	num_of_channels = settings.value("num_of_channels",0).toInt();
 	num_of_devices = settings.value("num_of_devices",16).toInt();
 	sampling_rate = settings.value("sampling_rate",1000).toInt();
 	first_dev_no = settings.value("first_dev_no",0).toInt();
-	port = settings.value("port",0).toInt();
 	notch = settings.value("notch",50).toFloat();
 	settings.endGroup();
 
@@ -496,12 +500,11 @@ int main( int argc, char **argv )
 		}
 	}
 
-	settings.beginGroup("settings");
+	settings.beginGroup(SETTINGS_STRING);
 	settings.setValue("num_of_channels",num_of_channels);
 	settings.setValue("num_of_devices",num_of_devices);
 	settings.setValue("sampling_rate",sampling_rate);
 	settings.setValue("first_dev_no",first_dev_no);
-	settings.setValue("port",port);
 	settings.setValue("notch",notch);
 	settings.endGroup();
 

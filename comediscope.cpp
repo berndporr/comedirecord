@@ -229,6 +229,13 @@ ComediScope::~ComediScope() {
 
 
 void ComediScope::setNotchFrequency(float f) {
+	if (f>sampling_rate) {
+		fprintf(stderr,
+			"Error: The notch frequency %f "
+			"is higher than the sampling rate of %dHz.\n",
+			f,sampling_rate);
+		return;
+	}
 	for(int j=0;j<nComediDevices;j++) {
 		for(int i=0;i<channels_in_use;i++) {
 			float frequency_width = f/10;
@@ -268,7 +275,7 @@ void ComediScope::updateTime() {
 						  crange[n],
 						  maxdata[n]);
 			
-			sprintf(tmp,"%+.4fV",phys);
+			sprintf(tmp,VOLT_FORMAT_STRING,phys);
 			comediRecord->voltageTextEdit[n][i]->setText(tmp);
 		}
 	}

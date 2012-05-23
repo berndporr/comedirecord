@@ -27,6 +27,7 @@ class ComediScope;
 
 #define IIRORDER 2
 
+#define VOLT_FORMAT_STRING "%+.4fV"
 
 class ComediScope : public QWidget
 {
@@ -255,6 +256,7 @@ public:
      **/
     lsampl_t* maxdata;
 
+public:
     /**
      * physical range
      **/
