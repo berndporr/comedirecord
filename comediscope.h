@@ -27,7 +27,7 @@ class ComediScope;
 
 #define IIRORDER 2
 
-#define VOLT_FORMAT_STRING "%+.4fV"
+#define VOLT_FORMAT_STRING "%+.3f"
 
 class ComediScope : public QWidget
 {

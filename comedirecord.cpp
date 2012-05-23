@@ -140,7 +140,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			char tmpVolt[128];
 			sprintf(tmpVolt,
 				" "VOLT_FORMAT_STRING" ",
-				comediScope->crange[n][i].max);
+				comediScope->crange[n]->max);
 			voltageTextEdit[n][i]->setMaximumSize
 				(voltageMetrics.width(tmpVolt),
 				 (int)(voltageMetrics.height()*1.1));
@@ -205,17 +205,20 @@ ComediRecord::ComediRecord( QWidget *parent,
 	controlLayout->addWidget(notchGroupBox);
 
 	// group for the record stuff
-	QGroupBox* recGroupBox = new QGroupBox("Write to file");
+	QGroupBox* recGroupBox = new QGroupBox();
 	QHBoxLayout *recLayout = new QHBoxLayout();
 
-	rawCheckbox=new QCheckBox("raw data" );
-	rawCheckbox->setChecked( false );
-	recLayout->addWidget(rawCheckbox);
+	QLabel* recLabel = new QLabel("Write to file:");
+	recLayout->addWidget(recLabel);
 
 	filePushButton = new QPushButton( "&filename" );
 	connect(filePushButton, SIGNAL( clicked() ),
 		this, SLOT( enterFileName() ) );
 	recLayout->addWidget(filePushButton);
+
+	rawCheckbox=new QCheckBox("raw data" );
+	rawCheckbox->setChecked( false );
+	recLayout->addWidget(rawCheckbox);
 
 	recPushButton = new QCheckBox( "&REC" );
 	recPushButton->connect(recPushButton, SIGNAL( stateChanged(int) ),
@@ -227,11 +230,14 @@ ComediRecord::ComediRecord( QWidget *parent,
 	controlLayout->addWidget(recGroupBox);
 
 	// group for the time base
-	QGroupBox *tbgrp = new QGroupBox("Timebase");
+	QGroupBox *tbgrp = new QGroupBox();
 	QHBoxLayout *tbLayout = new QHBoxLayout;
 	QFont tbFont("Courier",12);
 	tbFont.setBold(TRUE);
 	QFontMetrics tbMetrics(tbFont);
+
+	QLabel* tbLabel = new QLabel("Timebase:");
+	tbLayout->addWidget(tbLabel);
 
 	tbIncPushButton = new QPushButton( "+" );
 	tbIncPushButton->setMaximumSize ( tbMetrics.width(" + ") ,  
@@ -261,7 +267,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	controlLayout->addWidget(tbgrp);
 	controlBox->setLayout(controlLayout);
 
-	comediScope->setMinimumWidth ( 300 );
+	comediScope->setMinimumWidth ( 400 );
 	comediScope->setMinimumHeight ( 200 );
 
 	scopeLayout->addWidget(comediScope);
