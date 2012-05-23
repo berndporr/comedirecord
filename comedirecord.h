@@ -83,6 +83,12 @@ public:
      **/
     QCheckBox* filterCheckbox;
 
+public:
+    /**
+     * Comments
+     **/
+    QTextEdit* commentTextEdit;
+
     /**
      * Raw data checkbox
      **/

@@ -366,7 +366,9 @@ void ComediScope::startRec() {
 	if (recorded) return;
 	comediRecord->disableControls();
 	nsamples=0;
+	QString comment = comediRecord->commentTextEdit->toPlainText();
 	if (recordInHDF5) {
+		if (comment.isEmpty()) comment = "comedirecord";
 		// create the buffer
 
 		int tot_num_channels = num_channels + 1;
@@ -424,15 +426,23 @@ void ComediScope::startRec() {
 		
 		hdf5table_id= H5PTcreate_fl(
 			hdf5file_id,
-			"/comedirecord", 
+			comment.toLocal8Bit().constData(), 
 			hdf5compoundtype, 
 			500,
 			0);
 		
 		hdf5valid = 1;
 	} else {
-		rec_file=fopen(rec_filename->toLocal8Bit().constData(),
-			       "wt");
+		rec_file=NULL;
+		if (rec_filename)
+			rec_file=fopen(rec_filename->toLocal8Bit().constData(),
+				       "wt");
+		if (!rec_file)
+			delete rec_filename;
+		if ((rec_file)&&(!comment.isEmpty()))
+		    fprintf(rec_file,
+			    "# %s\n",
+			    comment.toLocal8Bit().constData());
 	}
 }
 

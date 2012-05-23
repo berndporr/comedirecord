@@ -181,10 +181,21 @@ ComediRecord::ComediRecord( QWidget *parent,
 	notchGroupBox->setStyleSheet(styleSheet);
 	QHBoxLayout *notchLayout = new QHBoxLayout();
 	char tmp[128];
-	sprintf(tmp,"%2.0f Hz notch filter",notchF);
+	sprintf(tmp,"%2.0f notch",notchF);
 	filterCheckbox=new QCheckBox( tmp );
 	filterCheckbox->setChecked( FALSE );
 	notchLayout->addWidget(filterCheckbox);
+	commentTextEdit=new QTextEdit();
+	QFont commentFont("Courier",10);
+	commentFont.setBold(FALSE);
+	QFontMetrics commentMetrics(commentFont);
+	commentTextEdit->setMaximumHeight ( commentMetrics.height() );
+	commentTextEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	commentTextEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	commentTextEdit->setFont(commentFont);
+	QLabel *l=new QLabel("Comment:");
+	notchLayout->addWidget(l);
+	notchLayout->addWidget(commentTextEdit);
        	notchGroupBox->setLayout(notchLayout);
 
 	controlLayout->addWidget(notchGroupBox);

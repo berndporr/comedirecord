@@ -27,6 +27,7 @@ class ComediScope;
 
 #define IIRORDER 2
 
+
 class ComediScope : public QWidget
 {
     Q_OBJECT
