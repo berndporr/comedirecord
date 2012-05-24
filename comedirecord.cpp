@@ -34,11 +34,12 @@
 // for the layout
 #define MAXROWS 8
 
-#define SETTINGS_STRING "settings"
-
+// saving settings
+#define SETTINGS_GLOBAL "global"
 #define SETTINGS_CHANNELS "channelconfig"
-
 #define CHSETTING_FORMAT "dev%09d_ch%09d"
+#define USBDUX_STRING "USB-DUX"
+#define PROGRAM_NAME "comedirecord"
 
 ComediRecord::ComediRecord( QWidget *parent, 
 			    int nchannels,
@@ -111,8 +112,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 
 	QSettings settings(QSettings::IniFormat, 
 			   QSettings::UserScope,
-			   "USB-DUX",
-			   "comedirecord");
+			   USBDUX_STRING,
+			   PROGRAM_NAME);
 
 	settings.beginGroup(SETTINGS_CHANNELS);
 
@@ -313,8 +314,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 ComediRecord::~ComediRecord() {
 	QSettings settings(QSettings::IniFormat, 
 			   QSettings::UserScope,
-			   "USB-DUX",
-			   "comedirecord");
+			   USBDUX_STRING,
+			   PROGRAM_NAME);
 
 	int n_devs = comediScope->getNcomediDevices();
 	int channels = comediScope->getNchannels();
@@ -489,10 +490,10 @@ int main( int argc, char **argv )
 
 	QSettings settings(QSettings::IniFormat, 
 			   QSettings::UserScope,
-			   "USB-DUX",
-			   "comedirecord");
+			   USBDUX_STRING,
+			   PROGRAM_NAME);
 
-	settings.beginGroup(SETTINGS_STRING);
+	settings.beginGroup(SETTINGS_GLOBAL);
 	num_of_channels = settings.value("num_of_channels",0).toInt();
 	num_of_devices = settings.value("num_of_devices",16).toInt();
 	sampling_rate = settings.value("sampling_rate",1000).toInt();
@@ -544,7 +545,7 @@ int main( int argc, char **argv )
 		}
 	}
 
-	settings.beginGroup(SETTINGS_STRING);
+	settings.beginGroup(SETTINGS_GLOBAL);
 	settings.setValue("num_of_channels",num_of_channels);
 	settings.setValue("num_of_devices",num_of_devices);
 	settings.setValue("sampling_rate",sampling_rate);
