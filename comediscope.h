@@ -127,7 +127,7 @@ public:
     /**
      * sets the filename for the data-file
      **/
-    int        setFilename(QString name,int csv,int hdf5);
+    void        setFilename(QString name,int csv,int hdf5);
 
 public:
     /**

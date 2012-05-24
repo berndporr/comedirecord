@@ -1,7 +1,7 @@
 /********************************************************************
  * comedirecord.cpp 
  * License: GNU, GPL
- * (c) 2004-2011, Bernd Porr
+ * (c) 2004-2012, Bernd Porr
  * No Warranty
  ********************************************************************/
 
@@ -31,6 +31,8 @@
 #include "comediscope.h"
 #include "comedirecord.h"
 
+#define VERSION "1.23"
+
 // for the layout
 #define MAXROWS 8
 
@@ -49,7 +51,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 			    int first_dev_no,
 			    int requrested_sampling_rate,
 			    const char* defaultTextStringForMissingExtData,
-			    const char* filename
+			    const char* filename,
+			    int csv
 	)
     : QWidget( parent ) {
 
@@ -140,7 +143,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			channelLabel[n][i]->setStyleSheet(styleSheet);
 			channelLabel[n][i]->setFont(voltageFont);
 			hbox[n][i]->addWidget(channelLabel[n][i]);
-			hbox[n][i]->setSpacing(2);
+			hbox[n][i]->setSpacing(1);
 			channelCheckbox[n][i] = new QCheckBox;
 			char tmpCh[128];
 			sprintf(tmpCh,CHSETTING_FORMAT,n,i);
@@ -306,7 +309,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 
 	changeTB();
 
-	if (filename) setFilename(filename,0,0);
+	// just now just with default format
+	if (filename) setFilename(filename,csv,0);
 
 	comediScope->startDAQ();
 }
@@ -359,9 +363,7 @@ void ComediRecord::enableControls() {
 
 
 void ComediRecord::setFilename(QString fn,int csv,int hdf5) {
-	if (comediScope->setFilename(fn,csv,hdf5)==-1) {
-		return;
-	}
+	comediScope->setFilename(fn,csv,hdf5);
 	QString tmp;
 	tmp="ComediRecord - datafile: "+fn;
 	setWindowTitle( tmp );
@@ -371,8 +373,8 @@ void ComediRecord::setFilename(QString fn,int csv,int hdf5) {
 
 void ComediRecord::enterFileName() {
 	QFileDialog::Options options;
-	QString filters(tr("space separated values (*.txt);;"
-			   "space separated values (*.dat);;"
+	QString filters(tr("space separated values (*.dat);;"
+			   "space separated values (*.txt);;"
 			   "comma separated values (*.csv);;"
 			   "hierachical data format (*.hdf)"
 				));
@@ -395,6 +397,7 @@ void ComediRecord::enterFileName() {
         }
 }
 
+// callback
 void ComediRecord::recstartstop(int) 
 {
   if (recPushButton->checkState()==Qt::Checked) 
@@ -404,6 +407,7 @@ void ComediRecord::recstartstop(int)
   else 
     {
       comediScope->stopRec();
+      // to force the user to enter a new filename
       recPushButton->setEnabled( false );
     }
 }
@@ -486,6 +490,7 @@ int main( int argc, char **argv )
 	int port = 0;
 	int sampling_rate = 1000;
 	int first_dev_no = 0;
+	int csv = 0;
 	const char* defaultTextStringForMissingExtData = NULL;
 
 	QSettings settings(QSettings::IniFormat, 
@@ -499,14 +504,15 @@ int main( int argc, char **argv )
 	sampling_rate = settings.value("sampling_rate",1000).toInt();
 	first_dev_no = settings.value("first_dev_no",0).toInt();
 	notch = settings.value("notch",50).toFloat();
+	csv = settings.value("csv",0).toInt();
 	settings.endGroup();
 
 	QApplication a( argc, argv );		// create application object
 
-	while (-1 != (c = getopt(argc, argv, "l:t:r:d:p:f:c:n:h"))) {
+	while (-1 != (c = getopt(argc, argv, "l:t:r:d:p:f:c:n:hv"))) {
 		switch (c) {
 		case 'f':
-			filename = optarg;
+			csv = atoi(optarg);
 			break;
 		case 'c':
 			num_of_channels = strtoul(optarg,NULL,0);
@@ -529,20 +535,28 @@ int main( int argc, char **argv )
 		case 't':
 			defaultTextStringForMissingExtData = optarg;
 			break;
+		case 'v':
+			printf("Version "VERSION"\n");
+			exit(1);
 		case 'h':
 		default:
 		printf("%s usage:\n"
-                       "   -f <filename for data>\n"
+                       "   -f <ASCII data format: 0=space separated, 1=csv>\n"
                        "   -c <number of channels>\n"
                        "   -n <notch_frequency> \n"
 		       "   -d <max number of comedi devices>\n"
 		       "   -l <lowest comedi device number used>\n"
-                       "   -r <sampling rate> \n"
+                       "   -r <sampling rate for the data files> \n"
 		       "   -p <TCP port for receiving external data>\n"
 		       "   -t <default outp when external data hasn't been rec'd>\n"
-		       "\n",argv[0]);
+		       "   -v prints version number\n",
+		       argv[0]);
 		exit(1);
 		}
+	}
+
+	if (optind < argc) {
+		filename = argv[optind];
 	}
 
 	settings.beginGroup(SETTINGS_GLOBAL);
@@ -551,6 +565,7 @@ int main( int argc, char **argv )
 	settings.setValue("sampling_rate",sampling_rate);
 	settings.setValue("first_dev_no",first_dev_no);
 	settings.setValue("notch",notch);
+	settings.setValue("csv",csv);
 	settings.endGroup();
 
 	ComediRecord comediRecord(0,
@@ -561,9 +576,12 @@ int main( int argc, char **argv )
 				  first_dev_no,
 				  sampling_rate,
 				  defaultTextStringForMissingExtData,
-				  filename
+				  filename,
+				  csv
 		);
 
-	comediRecord.show();			// show widget
-	return a.exec();			// run event loop
+	// show widget
+	comediRecord.show();
+	// run event loop
+	return a.exec();
 }

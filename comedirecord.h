@@ -41,7 +41,8 @@ public:
 		      int first_dev_no = 0,
 		      int requested_sampling_rate = 1000,
 		      const char* defaultTextStringForMissingExtData = NULL,
-		      const char* filename = NULL
+		      const char* filename = NULL,
+		      int csv = 0
 		);
 	
 	/**

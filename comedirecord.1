@@ -1,21 +1,23 @@
-.TH COMEDIRECORD "1" "April 2012" "comedirecord 1.2.2" "User Commands"
+.TH COMEDIRECORD "1" "May 2012" "comedirecord 1.24" "User Commands"
 .SH NAME
 comedirecord \- an oscilloscope for COMEDI
 .SH SYNOPSIS
 .B comedirecord
-[\fIOPTION\fR]...
+[\fIOPTION\fR]... FILENAME
 .SH DESCRIPTION
 A simple oscilloscope application which displays data from COMEDI
-DAQ cards. It can run with multiple cards and save the data
+DAQ cards. It can run with multiple idential cards and save the data
 in a single text file which then can be imported into OCTAVE, scilab,
-gnuplot and MATLAB. A 50Hz notch filter and a DC filter can be
-used to improve the data being displayed. Comedirecord can
+gnuplot, MATLAB and many more. A 50Hz notch filter and a DC filter can be
+used to improve the data being displayed. However the saved
+data is always unfiltered and at the sampling rate specified with
+the -r option. Comedirecord can
 also listen on a TCP port which allows the logging of additional
-information from external programs or just logging comments when
+information from external programs or just logging comments
 connected to telnet.
 .TP
-\-f FILENAME
-save data into FILENAME
+\-f FORMAT
+set data format for ASCII files: 0 = space separated, 1 = csv
 .TP
 \-c CHANNELS
 sets the number of channels
@@ -31,14 +33,20 @@ connected COMEDI devices are used)
 sets lowest comedi device number getting used (default is 0 or /dev/comedi0)
 .TP
 \-r SAMPLINGRATE
-sets the sampling rate
+sets the internal sampling rate and sets the sampling
+rate for the data files. If a slower timebase is selected
+then the displayed data is averaged. The saved data has always
+the sampling rate specified here.
 .TP
 \-p PORT
-sets the TCP port for receiving external data, for example via telnet
+sets the TCP port for receiving external data, for example via telnet.
+This data will be appended after the last channel sample.
 .TP
 \-t TEXT_APPENDED
 default text appended when external data via TCP hasn't been received
-or when external data has a lower sampling rate than the comedirecord
+or when external data has a lower sampling rate than the comedirecord.
+This is useful for gnuplot or octave so that the number of columns
+is constant.
 .SH "SEE ALSO"
 More documentation can be found on
 http://www.linux-usb-daq.co.uk/software2/comedi-record/
