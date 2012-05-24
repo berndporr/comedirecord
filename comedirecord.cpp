@@ -34,6 +34,12 @@
 // for the layout
 #define MAXROWS 8
 
+#define SETTINGS_STRING "settings"
+
+#define SETTINGS_CHANNELS "channelconfig"
+
+#define CHSETTING_FORMAT "dev%09d_ch%09d"
+
 ComediRecord::ComediRecord( QWidget *parent, 
 			    int nchannels,
 			    float notchF,
@@ -103,6 +109,14 @@ ComediRecord::ComediRecord( QWidget *parent,
 	// to the get the stuff a bit closer together
 	char styleSheet[] = "padding:0px;margin:0px;border:0px;";
 
+	QSettings settings(QSettings::IniFormat, 
+			   QSettings::UserScope,
+			   "USB-DUX",
+			   "comedirecord");
+
+	settings.beginGroup(SETTINGS_CHANNELS);
+
+	int nch_enabled = 0;
 	for(int n=0;n<n_devs;n++) {
 		channelLabel[n]=new QLabel*[channels];
 		channelCheckbox[n]=new QCheckBox*[channels];
@@ -127,6 +141,12 @@ ComediRecord::ComediRecord( QWidget *parent,
 			hbox[n][i]->addWidget(channelLabel[n][i]);
 			hbox[n][i]->setSpacing(2);
 			channelCheckbox[n][i] = new QCheckBox;
+			char tmpCh[128];
+			sprintf(tmpCh,CHSETTING_FORMAT,n,i);
+			channelCheckbox[n][i] -> setChecked( 
+				settings.value(tmpCh,0).toBool() ); 
+			if ( channelCheckbox[n][i] -> isChecked() )
+				nch_enabled++;
 			channelCheckbox[n][i]->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(channelCheckbox[n][i]);
 			channelgrp[n][i]->connect(channelCheckbox[n][i], 
@@ -174,10 +194,14 @@ ComediRecord::ComediRecord( QWidget *parent,
 		column++;
 		row = 1;
 	}
+
+	settings.endGroup();
+
 	controlLayout->addWidget(allChGroup);
 
 	// at least one should be active not to make the user nervous.
-	channelCheckbox[0][0]->setChecked( TRUE );
+	if (nch_enabled==0)
+		channelCheckbox[0][0]->setChecked( TRUE );
 
 	// notch filter
 	// create a group for the notch filter
@@ -287,6 +311,22 @@ ComediRecord::ComediRecord( QWidget *parent,
 }
 
 ComediRecord::~ComediRecord() {
+	QSettings settings(QSettings::IniFormat, 
+			   QSettings::UserScope,
+			   "USB-DUX",
+			   "comedirecord");
+
+	int n_devs = comediScope->getNcomediDevices();
+	int channels = comediScope->getNchannels();
+	settings.beginGroup(SETTINGS_CHANNELS);
+	for(int n=0;n<n_devs;n++) {
+		for(int i=0;i<channels;i++) {
+			char tmp[128];
+			sprintf(tmp,CHSETTING_FORMAT,n,i);
+			settings.setValue(tmp, channelCheckbox[n][i] -> isChecked() );
+		}
+	}
+	settings.endGroup();
 	delete comediScope;
 }
 
@@ -434,8 +474,6 @@ void ComediRecord::changeTB() {
 	tbInfoTextEdit->setText(s);
 	comediScope->setTB(tb_us);
 }
-
-#define SETTINGS_STRING "settings"
 
 int main( int argc, char **argv )
 {
