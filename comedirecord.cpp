@@ -31,20 +31,23 @@
 #include "comediscope.h"
 #include "comedirecord.h"
 
+// version number
 #define VERSION "1.23"
 
-// for the layout
-#define MAXROWS 8
-
-// saving settings
+// config constants
 #define SETTINGS_GLOBAL "global"
 #define SETTINGS_CHANNELS "channelconfig"
 #define CHSETTING_FORMAT "dev%09d_ch%09d"
 #define USBDUX_STRING "USB-DUX"
 #define PROGRAM_NAME "comedirecord"
 
+// for the layout
+// how we organise the channels switches
+#define MAXROWS 8
+
 ComediRecord::ComediRecord( QWidget *parent, 
 			    int nchannels,
+			    int maxrows,
 			    float notchF,
 			    int port,
 			    int num_of_devices,
@@ -190,7 +193,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			allChLayout->addWidget(channelgrp[n][i],row,column);
 
 			row++;
-			if (row > MAXROWS) {
+			if (row > maxrows) {
 				row = 1;
 				column++;
 			}
@@ -328,7 +331,8 @@ ComediRecord::~ComediRecord() {
 		for(int i=0;i<channels;i++) {
 			char tmp[128];
 			sprintf(tmp,CHSETTING_FORMAT,n,i);
-			settings.setValue(tmp, channelCheckbox[n][i] -> isChecked() );
+			settings.setValue(tmp, 
+					  channelCheckbox[n][i] -> isChecked() );
 		}
 	}
 	settings.endGroup();
@@ -484,6 +488,7 @@ int main( int argc, char **argv )
 {
 	int c;
 	int num_of_channels = 0;
+	int maxrows = MAXROWS;
 	int num_of_devices = 16;
 	const char *filename = NULL;
 	float notch = 50;
@@ -500,6 +505,7 @@ int main( int argc, char **argv )
 
 	settings.beginGroup(SETTINGS_GLOBAL);
 	num_of_channels = settings.value("num_of_channels",0).toInt();
+	maxrows = settings.value("maxrows",MAXROWS).toInt();
 	num_of_devices = settings.value("num_of_devices",16).toInt();
 	sampling_rate = settings.value("sampling_rate",1000).toInt();
 	first_dev_no = settings.value("first_dev_no",0).toInt();
@@ -509,8 +515,11 @@ int main( int argc, char **argv )
 
 	QApplication a( argc, argv );		// create application object
 
-	while (-1 != (c = getopt(argc, argv, "l:t:r:d:p:f:c:n:hv"))) {
+	while (-1 != (c = getopt(argc, argv, "m:l:t:r:d:p:f:c:n:hv"))) {
 		switch (c) {
+		case 'm':
+			maxrows = atoi(optarg);
+			break;
 		case 'f':
 			csv = atoi(optarg);
 			break;
@@ -543,13 +552,15 @@ int main( int argc, char **argv )
 		printf("%s usage:\n"
                        "   -f <ASCII data format: 0=space separated, 1=csv>\n"
                        "   -c <number of channels>\n"
+		       "   -m <number of channel tickbox-rows>\n"
                        "   -n <notch_frequency> \n"
 		       "   -d <max number of comedi devices>\n"
 		       "   -l <lowest comedi device number used>\n"
                        "   -r <sampling rate for the data files> \n"
 		       "   -p <TCP port for receiving external data>\n"
 		       "   -t <default outp when external data hasn't been rec'd>\n"
-		       "   -v prints version number\n",
+		       "   -v prints version number\n"
+		       "   -h prints this help screen\n",
 		       argv[0]);
 		exit(1);
 		}
@@ -562,6 +573,7 @@ int main( int argc, char **argv )
 	settings.beginGroup(SETTINGS_GLOBAL);
 	settings.setValue("num_of_channels",num_of_channels);
 	settings.setValue("num_of_devices",num_of_devices);
+	settings.setValue("maxrows",maxrows);
 	settings.setValue("sampling_rate",sampling_rate);
 	settings.setValue("first_dev_no",first_dev_no);
 	settings.setValue("notch",notch);
@@ -570,6 +582,7 @@ int main( int argc, char **argv )
 
 	ComediRecord comediRecord(0,
 				  num_of_channels,
+				  maxrows,
 				  notch,
 				  port,
 				  num_of_devices,

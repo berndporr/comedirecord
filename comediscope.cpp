@@ -56,8 +56,12 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 
 	if (port_for_ext_data>0) {
 		fprintf(stderr,
-			"Expecting a connection on TCP port %d. "
-			"Start your client now.\n",port_for_ext_data);
+			"Expecting a connection on TCP port %d. \n"
+			"Start your client now, for example: \n"
+			"telnet localhost %d\n"
+			"Press Ctrl-C to abort.\n",
+			port_for_ext_data,
+			port_for_ext_data);
 		ext_data_receive = new Ext_data_receive(
 			port_for_ext_data,
 			defaultTextStringForMissingExtData
@@ -72,12 +76,15 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 
 	int range = 0;
 	int aref = AREF_GROUND;
+	// do not produce NAN for out of range behaviour
 	comedi_set_global_oor_behavior(COMEDI_OOR_NUMBER);
 
+	// create an array which keeps the comedi devices
 	dev = new comedi_t*[maxComediDevs];
 	for(int devNo=0;devNo<maxComediDevs;devNo++) {
 		dev[devNo] = NULL;
 	}
+	// let's probe how many we have
 	nComediDevices = 0;
 	for(int devNo=0;devNo<maxComediDevs;devNo++) {
 		char filename[128];
@@ -90,36 +97,43 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 		}
 	}
 
+	// none detected
 	if (nComediDevices<1) {
 		fprintf(stderr,"No comedi devices detected!\n");
 		exit(1);
 	}
 
+	// create channel lists
 	chanlist = new unsigned int*[nComediDevices];
+	// create command structures
 	cmd = new comedi_cmd*[nComediDevices];
+	// find the subdevice which is analogue in
 	subdevice = comedi_find_subdevice_by_type(dev[0],COMEDI_SUBD_AI,0);
 
-	if (channels_in_use == 0) {
+	// check if user has specified channels or if requested
+	// number of channels make sense
+	if ((channels_in_use < 1)||
+	    (channels_in_use > comedi_get_n_channels(dev[0],subdevice)))
+	{
 		channels_in_use = comedi_get_n_channels(dev[0],subdevice);
 	}
 
+	// create channel lists and the command structures
 	for(int devNo=0;devNo<nComediDevices;devNo++) {
 		chanlist[devNo] = new unsigned int[channels_in_use];
+		assert( chanlist[devNo]!=NULL );
 		for(int i=0;i<channels_in_use;i++){
 			chanlist[devNo][i] = CR_PACK(i,range,aref);
 		}
 		cmd[devNo] = new comedi_cmd;
-		if (!dev[devNo]) {
-			fprintf(stderr,"BUG! dev[%d]=NULL\n",devNo);
-			exit(1);
-		}
+		assert( dev[devNo]!=NULL );
 		int r = comedi_get_cmd_generic_timed(dev[devNo],
 						     subdevice,
 						     cmd[devNo],
 						     channels_in_use,
 						     (int)(1e9/req_sampling_rate));
 		if(r<0){
-			printf("comedi_get_cmd_generic_timed failed\n");
+			comedi_perror("comedi_get_cmd_generic_timed failed\n");
 			exit(-1);
 		}
 		/* Modify parts of the command */
@@ -130,35 +144,42 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 		cmd[devNo]->stop_arg=0;
 		int ret = comedi_command_test(dev[devNo],cmd[devNo]);
 		if(ret<0){
-			comedi_perror("comedi_command_test");
+			comedi_perror("1st comedi_command_test failed\n");
 			exit(-1);
 		}
 		ret = comedi_command_test(dev[devNo],cmd[devNo]);
 		if(ret<0){
-			comedi_perror("comedi_command_test");
+			comedi_perror("2nd comedi_command_test failed\n");
 			exit(-1);
 		}
 		if(ret!=0){
-			fprintf(stderr,"Error preparing command\n");
+			fprintf(stderr,"Error preparing command.\n");
 			exit(-1);
 		}
 	}
 
 	// the timing is done channel by channel
+	// this means that the actual sampling rate is divided by
+	// number of channels
 	if ((cmd[0]->convert_src ==  TRIG_TIMER)&&(cmd[0]->convert_arg)) {
 		sampling_rate=((1E9 / cmd[0]->convert_arg)/channels_in_use);
 	}
 	
 	// the timing is done scan by scan (all channels at once)
+	// the sampling rate is equivalent of the scan_begin_arg
 	if ((cmd[0]->scan_begin_src ==  TRIG_TIMER)&&(cmd[0]->scan_begin_arg)) {
 		sampling_rate=1E9 / cmd[0]->scan_begin_arg;
 	}
 
+	// initialise the graphics stuff
 	ypos = new int**[nComediDevices];
+	assert(ypos != NULL);
 	for(int devNo=0;devNo<nComediDevices;devNo++) {
 		ypos[devNo]=new int*[channels_in_use];
+		assert(ypos[devNo] != NULL);
 		for(int i=0;i<channels_in_use;i++) {
 			ypos[devNo][i] = new int[MAX_DISP_X];
+			assert( ypos[devNo][i] != NULL);
 			for(int j=0;j<MAX_DISP_X;j++) {
 				ypos[devNo][i][j]=0;
 			}
@@ -169,23 +190,36 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	nsamples=0;
 
 	maxdata = new lsampl_t[nComediDevices];
+	assert( maxdata != NULL );
 	crange = new comedi_range*[nComediDevices];
+	assert( crange != NULL );
 	for(int devNo=0;devNo<nComediDevices;devNo++) {
+		// we just go for the default ranges
 		maxdata[devNo]=comedi_get_maxdata(dev[devNo],subdevice,0);
 		crange[devNo]=comedi_get_range(dev[devNo],subdevice,0,0);
 	}
 
+	// 50Hz or 60Hz mains notch filter
 	iirnotch = new Iir::Butterworth::BandStop<IIRORDER>**[nComediDevices];
+	assert( iirnotch != NULL );
 	adAvgBuffer = new float*[nComediDevices];
+	assert( adAvgBuffer != NULL );
 	daqData = new lsampl_t*[nComediDevices];
+	assert( daqData != NULL );
 	for(int devNo=0;devNo<nComediDevices;devNo++) {
 		iirnotch[devNo] = new Iir::Butterworth::BandStop<IIRORDER>*[channels_in_use];
+		assert( iirnotch[devNo] != NULL );
+		// floating point buffer for plotting
 		adAvgBuffer[devNo]=new float[channels_in_use];
+		assert( adAvgBuffer[devNo] != NULL );
 		for(int i=0;i<channels_in_use;i++) {
 			adAvgBuffer[devNo][i]=0;
 			iirnotch[devNo][i] = new Iir::Butterworth::BandStop<IIRORDER>;
+			assert( iirnotch[devNo][i] != NULL );
 		}
+		// raw data buffer for saving the data
 		daqData[devNo] = new lsampl_t[channels_in_use];
+		assert( daqData[devNo] != NULL );
 		for(int i=0;i<channels_in_use;i++) {
 			daqData[devNo][i]=0;
 		}
@@ -194,6 +228,7 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	setNotchFrequency(f);
 
 	counter = new QTimer( this );
+	assert( counter != NULL );
 	connect( counter, 
 		 SIGNAL(timeout()),
 		 this, 
@@ -536,16 +571,16 @@ void ComediScope::paintData(float** buffer) {
 		       xer,h);
 	int act=0;
 	for(int n=0;n<nComediDevices;n++) {
-		float dy=(float)base/(float)maxdata[n];
+		float dy=(float)base/(float)(crange[n]->max-crange[n]->min);
 		for(int i=0;i<channels_in_use;i++) {
 			if (comediRecord->
 			    channelCheckbox[n][i]->
 			    isChecked()) {
 				paint.setPen(penData[act%3]);
-				int yZero=base/2+base*act;
+				int yZero=base*act;
 				float gain=comediRecord->gain[n][i]->getGain();
 				float value = buffer[n][i] * gain;
-				int yTmp=yZero-(int)(value*dy);
+				int yTmp=yZero-(int)((value-crange[n]->min)*dy);
 				ypos[n][i][xpos+1]=yTmp;
 				paint.drawLine(xpos,ypos[n][i][xpos],
 					       xpos+1,ypos[n][i][xpos+1]);
@@ -608,22 +643,30 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 			}
 			
 			for(int i=0;i<channels_in_use;i++) {
-				float value;
+				int sample;
 				if(subdev_flags & SDF_LSAMPL) {
-					value= ((float)((lsampl_t *)buffer)[i]);
+					sample = ((int)((lsampl_t *)buffer)[i]);
 				} else {
-					value= ((float)((sampl_t *)buffer)[i]);
+					sample = ((int)((sampl_t *)buffer)[i]);
 				}
-				daqData[n][i] = value;
-				value=(float)(value-(maxdata[n]/2));
+				// store raw data
+				daqData[n][i] = sample;
+				// convert data to physical units for plotting
+				float value = comedi_to_phys(sample,
+							     crange[n],
+							     maxdata[n]);
+				// remove DC
 				value = comediRecord->dcSub[n][i]->filter(value);
+				// remove 50Hz
 				if (comediRecord->filterCheckbox->checkState()==Qt::Checked) {
 					value=iirnotch[n][i]->filter(value);
 				}
+				// average response if TB is slower than sampling rate
 				adAvgBuffer[n][i] = adAvgBuffer[n][i] + value;
 			}
 		}
 
+		// save data
 		if (comediRecord->recPushButton->checkState()==Qt::Checked) {
 			writeFile();
 		}
@@ -631,6 +674,7 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 		nsamples++;
 		tb_counter--;
 
+		// enough averaged?
 		if (tb_counter<=0) {
 			for(int n=0;n<nComediDevices;n++) {
 				for(int i=0;i<channels_in_use;i++) {
@@ -638,8 +682,10 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 				}
 			}
 		
+			// plot the stuff
 			paintData(adAvgBuffer);
 
+			// clear buffer
 			tb_counter=tb_init;
 			for(int n=0;n<nComediDevices;n++) {
 				for(int i=0;i<channels_in_use;i++) {
