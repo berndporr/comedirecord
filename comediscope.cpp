@@ -569,18 +569,20 @@ void ComediScope::paintData(float** buffer) {
 	}
 	paint.drawLine(xer,0,
 		       xer,h);
-	int act=0;
+	int act=1;
 	for(int n=0;n<nComediDevices;n++) {
-		float dy=(float)base/(float)(crange[n]->max-crange[n]->min);
+		float minV = crange[n]->min;
+		float maxV = crange[n]->max;
+		float dy=(float)base/(float)(maxV-minV);
 		for(int i=0;i<channels_in_use;i++) {
 			if (comediRecord->
 			    channelCheckbox[n][i]->
 			    isChecked()) {
 				paint.setPen(penData[act%3]);
-				int yZero=base*act;
 				float gain=comediRecord->gain[n][i]->getGain();
 				float value = buffer[n][i] * gain;
-				int yTmp=yZero-(int)((value-crange[n]->min)*dy);
+				int yZero=base*act-(int)((0-minV)*dy);
+				int yTmp=base*act-(int)((value-minV)*dy);
 				ypos[n][i][xpos+1]=yTmp;
 				paint.drawLine(xpos,ypos[n][i][xpos],
 					       xpos+1,ypos[n][i][xpos+1]);
