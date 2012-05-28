@@ -203,6 +203,8 @@ private:
  **/
     QHBoxLayout*** hbox;
 
+    QLabel *statusLabel;
+
 };
 
 

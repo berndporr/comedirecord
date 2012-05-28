@@ -45,6 +45,19 @@
 // how we organise the channels switches
 #define MAXROWS 8
 
+
+class QCommentTextEdit : public QTextEdit {
+protected:
+	void keyPressEvent(QKeyEvent *event) {
+		if ((event->key() != Qt::Key_Return)&&
+		    (event->key() != Qt::Key_Enter)&&
+		    (event->key() != Qt::Key_Tab)	)	{
+			QTextEdit::keyPressEvent(event);
+		}
+	}
+};
+
+
 ComediRecord::ComediRecord( QWidget *parent, 
 			    int nchannels,
 			    int maxrows,
@@ -221,7 +234,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	filterCheckbox=new QCheckBox( tmp );
 	filterCheckbox->setChecked( FALSE );
 	notchLayout->addWidget(filterCheckbox);
-	commentTextEdit=new QTextEdit();
+	commentTextEdit=new QCommentTextEdit();
 	QFont commentFont("Courier",10);
 	QFontMetrics commentMetrics(commentFont);
 	commentTextEdit->setMaximumHeight ( commentMetrics.height() );
@@ -296,6 +309,19 @@ ComediRecord::ComediRecord( QWidget *parent,
 
 	tbgrp->setLayout(tbLayout);
 	controlLayout->addWidget(tbgrp);
+
+	QGroupBox *statusgrp = new QGroupBox;
+	QHBoxLayout *statusLayout = new QHBoxLayout;
+
+	char status[256];
+	sprintf(status,"comedi devs: %d, sampling rate: %d Hz",
+		comediScope->getNcomediDevices(),
+		comediScope->getActualSamplingRate());
+	statusLabel = new QLabel(status);
+	statusLayout->addWidget(statusLabel);
+	statusgrp->setLayout(statusLayout);
+	controlLayout->addWidget(statusgrp);
+
 	controlBox->setLayout(controlLayout);
 
 	comediScope->setMinimumWidth ( 400 );

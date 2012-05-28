@@ -9,7 +9,7 @@ A simple oscilloscope application which displays data from COMEDI
 DAQ cards. It can run with multiple idential cards and save the data
 in a single text file which then can be imported into OCTAVE, scilab,
 gnuplot, MATLAB and other data ploting applications.
-A 50Hz notch filter and a DC filter can be
+A mains notch filter and a DC filter can be
 used to improve the data being displayed. However
 the data is always saved unfiltered in its original form
 and at the sampling rate specified with
@@ -18,11 +18,17 @@ also listen on a TCP port which allows the logging of additional
 information from external programs or just logging comments
 connected to telnet.
 .TP
-\-f FORMAT
-set data format for ASCII files: 0 = space separated, 1 = csv
+\-r SAMPLINGRATE
+sets both the internal sampling rate and the sampling
+rate for the data files. If a slower timebase is selected
+then the displayed data is averaged. The saved data has always
+the sampling rate specified here.
 .TP
 \-c CHANNELS
 sets the number of channels
+.TP
+\-f FORMAT
+set data format for ASCII files: 0 = space separated, 1 = csv
 .TP
 \-m CHANNEL_ROWS
 sets the number of channels per row on screen. This can be used
@@ -38,12 +44,6 @@ connected COMEDI devices are used)
 \-l LOWEST_COMEDI_DEV_NUM
 sets lowest comedi device number which will be
 probed (default is 0 which means that /dev/comedi0 will be probed first).
-.TP
-\-r SAMPLINGRATE
-sets both the internal sampling rate and the sampling
-rate for the data files. If a slower timebase is selected
-then the displayed data is averaged. The saved data has always
-the sampling rate specified here.
 .TP
 \-p PORT
 sets the TCP port for receiving external data, for example via telnet.
