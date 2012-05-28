@@ -32,7 +32,7 @@
 #include "comedirecord.h"
 
 // version number
-#define VERSION "1.23"
+#define VERSION "1.24"
 
 // config constants
 #define SETTINGS_GLOBAL "global"
