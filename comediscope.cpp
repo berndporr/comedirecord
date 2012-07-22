@@ -42,12 +42,6 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	// for ASCII
 	rec_file=NULL;
 
-	// for HDF5
-	hdf5table_id=0;
-	hdf5floatBuffer=NULL;
-	hdf5valid=0;
-	recordInHDF5=0;
-
 	// filename
 	rec_filename=new QString();
 
@@ -254,11 +248,6 @@ ComediScope::~ComediScope() {
 	if (rec_file) {
 		fclose(rec_file);
 	}
-	if (hdf5valid) {
-		H5PTclose( hdf5table_id );
-		H5Fclose( hdf5file_id );
-		H5Tclose( hdf5compoundtype );
-	}
 }
 
 
@@ -286,7 +275,7 @@ void ComediScope::setNotchFrequency(float f) {
 
 void ComediScope::updateTime() {
 	QString s;
-	if ((!rec_file)&&(!hdf5valid)) {
+	if (!rec_file) {
 		if (rec_filename->isEmpty()) {
 			s.sprintf("comedirecord");
 		} else {
@@ -316,10 +305,9 @@ void ComediScope::updateTime() {
 }
 
 
-void ComediScope::setFilename(QString name,int csv,int hdf5) {
+void ComediScope::setFilename(QString name,int csv) {
 	(*rec_filename)=name;
 	recorded=0;
-	recordInHDF5=hdf5;
 	if (csv) {
 		separator=',';
 	} else {
@@ -328,7 +316,7 @@ void ComediScope::setFilename(QString name,int csv,int hdf5) {
 }
 
 
-void ComediScope::writeASCIIFile() {
+void ComediScope::writeFile() {
 	if (!rec_file) return;
 	if (comediRecord->
 	    rawCheckbox->isChecked()) {
@@ -360,47 +348,6 @@ void ComediScope::writeASCIIFile() {
 	fprintf(rec_file,"\n");
 }
 
-void ComediScope::writeHDF5File() {
-	if ((!hdf5valid)||(!recordInHDF5)||(!hdf5floatBuffer)) return;
-	float t = ((float)nsamples)/((float)sampling_rate);
-	if (comediRecord->
-	    rawCheckbox->isChecked()) {
-		if (hdf5floatBuffer) hdf5floatBuffer[0] = t;
-	} else {
-		if (hdf5floatBuffer) hdf5floatBuffer[0] = t;
-	}
-	int chIdx = 1;
-	for(int n=0;n<nComediDevices;n++) {
-		for(int i=0;i<channels_in_use;i++) {
-			if (comediRecord->
-			    channelCheckbox[n][i]->isChecked()
-				) {
-				if (comediRecord->
-				    rawCheckbox->isChecked()) {
-					fprintf(rec_file,
-						"%c%d",
-						separator,
-						(int)(daqData[n][i]));
-				} else {
-					float phy=comedi_to_phys((lsampl_t)(daqData[n][i]),
-								 crange[n],
-								 maxdata[n]);
-					hdf5floatBuffer[chIdx++] = phy;
-				}
-			}
-		}
-	}
-	if (ext_data_receive) {
-		hdf5floatBuffer[chIdx++] = atof(ext_data_receive->getData());
-	}
-	H5PTappend( hdf5table_id, 1, hdf5floatBuffer );
-}
-
-void ComediScope::writeFile() {
-	writeHDF5File();
-	writeASCIIFile();
-}
-
 void ComediScope::startRec() {
 	if (recorded) return;
 	if (rec_filename->isEmpty()) return;
@@ -409,106 +356,26 @@ void ComediScope::startRec() {
 	nsamples=0;
 	// get possible comments
 	QString comment = comediRecord->commentTextEdit->toPlainText();
-	if (recordInHDF5) {
-		// we need a comment because this is the name
-		// of the HDF data set
-		if (comment.isEmpty()) comment = "comedirecord";
-		// create the buffer
-
-		// number of channels + time
-		int tot_num_channels = num_channels + 1;
-
-		// external TCP/IP port
-		if (ext_data_receive) {
-			tot_num_channels++;
-		}
-
-		// did we generate one before?
-		if (hdf5floatBuffer) delete[] hdf5floatBuffer;
-		// create a new one
-		hdf5floatBuffer = new float[tot_num_channels];
-		
-		// create the compound type
-		hdf5compoundtype = H5Tcreate (H5T_COMPOUND,
-					      sizeof(float)*(tot_num_channels) );
-		
-		// first entry is time
-		herr_t status = H5Tinsert (hdf5compoundtype,
-					   "t_sec",
-					   0, 
-					   H5T_NATIVE_FLOAT);
-
-		// the other entries are the active channels
-		int idxNo = 1;
-		for(int n=0;n<nComediDevices;n++) {
-			for(int i=0;i<channels_in_use;i++) {
-				if (comediRecord->
-				    channelCheckbox[n][i]->isChecked()) {	
-					char tmp[256];
-					if (comediRecord->
-					    rawCheckbox->isChecked()) {
-						sprintf(tmp,
-							"dev%dch%d_raw",n,i);	
-					} else {
-						sprintf(tmp,
-							"dev%dch%d_v",n,i);
-					}
-					status = H5Tinsert (hdf5compoundtype, 
-							    tmp, 
-							    sizeof(float)*idxNo,
-							    H5T_NATIVE_FLOAT);
-					idxNo++;
-				}
-			}
-		}
-
-		// plus one additional channels for external data receive
-		if (ext_data_receive) {
-			status = H5Tinsert (hdf5compoundtype, 
-					    "ext_data", 
-					    sizeof(float)*idxNo,
-					    H5T_NATIVE_FLOAT);
-		}
-
-		// open the file
-		hdf5file_id = H5Fcreate (
-			rec_filename->toLocal8Bit().constData(), 
-			H5F_ACC_EXCL,
-			H5P_DEFAULT, 
-			H5P_DEFAULT );
-		
-		// create the table in the file
-		hdf5table_id= H5PTcreate_fl(
-			hdf5file_id,
-			comment.toLocal8Bit().constData(), 
-			hdf5compoundtype, 
-			500,
-			0 );
-		
-		// flag that we can write data to the file
-		hdf5valid = 1;
-	} else {
-		// ASCII
-		rec_file=NULL;
-		// do we have a valid filename?
-		if (rec_filename)
-			rec_file=fopen(rec_filename->toLocal8Bit().constData(),
-				       "wt");
-		// could we open it?
-		if (!rec_file) {
-			// could not open
-			delete rec_filename;
-			// print error msg
-			fprintf(stderr,
-				"Writing to %s failed.\n",
-				rec_filename->toLocal8Bit().constData());
-		}
-		// print comment
-		if ((rec_file)&&(!comment.isEmpty())) {
-			fprintf(rec_file,
-				"# %s\n",
-				comment.toLocal8Bit().constData());
-		}
+	// ASCII
+	rec_file=NULL;
+	// do we have a valid filename?
+	if (rec_filename)
+		rec_file=fopen(rec_filename->toLocal8Bit().constData(),
+			       "wt");
+	// could we open it?
+	if (!rec_file) {
+		// could not open
+		delete rec_filename;
+		// print error msg
+		fprintf(stderr,
+			"Writing to %s failed.\n",
+			rec_filename->toLocal8Bit().constData());
+	}
+	// print comment
+	if ((rec_file)&&(!comment.isEmpty())) {
+		fprintf(rec_file,
+			"# %s\n",
+			comment.toLocal8Bit().constData());
 	}
 }
 
@@ -517,17 +384,6 @@ void ComediScope::stopRec() {
 	if (rec_file) {
 		fclose(rec_file);
 		rec_file = NULL;
-		recorded = 1;
-	}
-	if (hdf5valid&&recordInHDF5) {
-		if (hdf5floatBuffer) {
-			delete[] hdf5floatBuffer;
-			hdf5floatBuffer = NULL;
-		}
-		H5PTclose( hdf5table_id );
-		H5Fclose( hdf5file_id );
-		H5Tclose( hdf5compoundtype );
-		hdf5valid = 0;
 		recorded = 1;
 	}
 	// re-enabel channel switches

@@ -14,8 +14,6 @@ class ComediScope;
 #include <QTimerEvent>
 
 #include <Iir.h>
-#include <hdf5.h>
-#include <hdf5_hl.h>
 
 #include <comedilib.h>
 #include <fcntl.h>
@@ -88,11 +86,6 @@ private:
  **/
     void        writeFile();
 
-
-    void        writeASCIIFile();
-    void        writeHDF5File();
-
-
 private:
     /**
      * file descriptor for /dev/comedi0
@@ -127,7 +120,7 @@ public:
     /**
      * sets the filename for the data-file
      **/
-    void        setFilename(QString name,int csv,int hdf5);
+    void        setFilename(QString name,int csv);
 
 public:
     /**
@@ -152,36 +145,6 @@ private:
      * the file descriptor to the data-file
      **/
     FILE*       rec_file;
-
-    /**
-     * HDF5 table where one row contains the data from one moment in time
-     **/
-    hid_t       hdf5table_id;
-
-    /**
-     * pointer to the file
-     **/
-    hid_t       hdf5file_id;
-
-    /**
-     * we have a valid HDF5 setup, we can record
-     **/
-    int         hdf5valid;
-
-    /**
-     * we record in HDF5 and not ASCII
-     **/
-    int         recordInHDF5;
-
-    /**
-     * buffer which stores the data
-     **/
-    float*      hdf5floatBuffer;
-
-    /**
-     * the type which describes the sample
-     **/
-    hid_t       hdf5compoundtype;
 
     /**
      * number of channels switched on

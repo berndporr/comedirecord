@@ -339,7 +339,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	changeTB();
 
 	// just now just with default format
-	if (filename) setFilename(filename,csv,0);
+	if (filename) setFilename(filename,csv);
 
 	comediScope->startDAQ();
 }
@@ -392,8 +392,8 @@ void ComediRecord::enableControls() {
 }
 
 
-void ComediRecord::setFilename(QString fn,int csv,int hdf5) {
-	comediScope->setFilename(fn,csv,hdf5);
+void ComediRecord::setFilename(QString fn,int csv) {
+	comediScope->setFilename(fn,csv);
 	QString tmp;
 	tmp="ComediRecord - datafile: "+fn;
 	setWindowTitle( tmp );
@@ -405,8 +405,7 @@ void ComediRecord::enterFileName() {
 	QFileDialog::Options options;
 	QString filters(tr("space separated values (*.dat);;"
 			   "space separated values (*.txt);;"
-			   "comma separated values (*.csv);;"
-			   "hierachical data format (*.hdf)"
+			   "comma separated values (*.csv)"
 				));
 
 	QFileDialog dialog(this);
@@ -422,8 +421,7 @@ void ComediRecord::enterFileName() {
                         fileName=fileName+extension;
                 }
 		int isCSV = extension.indexOf("csv");
-		int isHDF5 = extension.indexOf("hdf");
-                setFilename(QString(fileName),isCSV>-1,isHDF5>-1);
+                setFilename(QString(fileName),isCSV>-1);
         }
 }
 
