@@ -68,7 +68,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 			    int requrested_sampling_rate,
 			    const char* defaultTextStringForMissingExtData,
 			    const char* filename,
-			    int csv
+			    int csv,
+			    int fftdev, int fftch
 	)
     : QWidget( parent ) {
 
@@ -79,8 +80,12 @@ ComediRecord::ComediRecord( QWidget *parent,
 				    num_of_devices,
 				    first_dev_no,
 				    requrested_sampling_rate,
-				    defaultTextStringForMissingExtData
+				    defaultTextStringForMissingExtData,
+				    fftdev, fftch
 		);
+
+	fftscope = new FFTScope( this );
+	fftscope->show();
 
 	int channels = comediScope->getNchannels();
 
@@ -520,6 +525,8 @@ int main( int argc, char **argv )
 	int sampling_rate = 1000;
 	int first_dev_no = 0;
 	int csv = 0;
+	int fftdevno = -1;
+	int fftch = -1;
 	const char* defaultTextStringForMissingExtData = NULL;
 
 	QSettings settings(QSettings::IniFormat, 
@@ -539,8 +546,12 @@ int main( int argc, char **argv )
 
 	QApplication a( argc, argv );		// create application object
 
-	while (-1 != (c = getopt(argc, argv, "m:l:t:r:d:p:f:c:n:hv"))) {
+	while (-1 != (c = getopt(argc, argv, "x:m:l:t:r:d:p:f:c:n:hv"))) {
 		switch (c) {
+		case 'x':
+			sscanf(optarg,"%d,%d",&fftdevno,&fftch);
+			printf("%s %d %d\n",optarg,fftdevno,fftch);
+			break;
 		case 'm':
 			maxrows = atoi(optarg);
 			break;
@@ -614,7 +625,9 @@ int main( int argc, char **argv )
 				  sampling_rate,
 				  defaultTextStringForMissingExtData,
 				  filename,
-				  csv
+				  csv,
+				  fftdevno,
+				  fftch
 		);
 
 	// show widget

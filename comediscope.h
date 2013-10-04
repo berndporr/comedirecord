@@ -41,7 +41,8 @@ public:
 		 int maxComediDevices = 1,
 		 int first_dev_no = 0,
 		 int req_sampling_rate = 1000,
-		 const char *defaultTextStringForMissingExtData = NULL
+		 const char *defaultTextStringForMissingExtData = NULL,
+		 int fftdevnumber = -1, int fftchannel = -1
 	    );
 /**
  * Destructor: close the file if necessary
@@ -224,7 +225,7 @@ public:
      * physical range
      **/
     comedi_range** crange;
-
+    
     /**
      * notch filter
      **/
@@ -277,6 +278,9 @@ public:
  * Gets the actual sampling rate the boards are running at.
  **/
     int getActualSamplingRate() {return sampling_rate;};
+
+    int fftdevno;
+    int fftch;
 
 };
 

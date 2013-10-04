@@ -1,6 +1,6 @@
 /**
  * comediscope.h
- * (c) 2004-2012 Bernd Porr, no warranty, GNU-public license
+ * (c) 2004-2013 Bernd Porr, no warranty, GNU-public license
  **/
 #include <QTimer>
 #include <QPainter>
@@ -27,17 +27,19 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 			  int maxComediDevs,
 			  int first_dev_no,
 			  int req_sampling_rate,
-			  const char* defaultTextStringForMissingExtData
+			  const char* defaultTextStringForMissingExtData,
+			  int fftdevnumber, int fftchannel
 	)
     : QWidget( comediRecordTmp ) {
-
-	setAttribute(Qt::WA_NoBackground);
 
 	channels_in_use = channels;
 
 	tb_init=1;
 	tb_counter=tb_init;
 	comediRecord=comediRecordTmp;
+
+	fftdevno = fftdevnumber;
+	fftch = fftchannel;
 
 	// for ASCII
 	rec_file=NULL;
@@ -67,6 +69,7 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 
 	//////////////////////////////////////////////////////////////
 
+	setAttribute(Qt::WA_OpaquePaintEvent);
 
 	int range = 0;
 	int aref = AREF_GROUND;
@@ -474,7 +477,7 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 			if (!comedi_get_buffer_contents(dev[n],subdevice))
 				return;
 		}
-		
+
 		for(int n=0;n<nComediDevices;n++) {
 			int subdev_flags = comedi_get_subdevice_flags(dev[n],
 								      subdevice);
@@ -519,6 +522,8 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 				if (comediRecord->filterCheckbox->checkState()==Qt::Checked) {
 					value=iirnotch[n][i]->filter(value);
 				}
+				if ((n==fftdevno)&&(i==fftch)) 
+					comediRecord->fftscope->append(value);
 				// average response if TB is slower than sampling rate
 				adAvgBuffer[n][i] = adAvgBuffer[n][i] + value;
 			}

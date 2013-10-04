@@ -1,6 +1,6 @@
 /**
  * comedirecord.h
- * (c) 2004-2011, Bernd Porr, no warranty, GNU-public license
+ * (c) 2004-2013, Bernd Porr, no warranty, GNU-public license
  * BerndPorr@f2s.com
  **/
 class ComediRecord;
@@ -20,6 +20,7 @@ class ComediRecord;
 #include "comediscope.h"
 #include "gain.h"
 #include "dc_sub.h"
+#include "fftscope.h"
 
 // defines how quickly the DC detector follows the signal
 // the larger the value the slower
@@ -43,7 +44,9 @@ public:
 		      int requested_sampling_rate = 1000,
 		      const char* defaultTextStringForMissingExtData = NULL,
 		      const char* filename = NULL,
-		      int csv = 0
+		      int csv = 0,
+		      int fftdevnumber = -1,
+		      int fftchannel = -1
 		);
 	
 	/**
@@ -204,6 +207,12 @@ private:
     QHBoxLayout*** hbox;
 
     QLabel *statusLabel;
+
+public:
+/**
+ * FFT window
+ **/
+    FFTScope *fftscope;
 
 };
 
