@@ -84,10 +84,15 @@ ComediRecord::ComediRecord( QWidget *parent,
 				    fftdev, fftch
 		);
 
-	fftscope = new FFTScope( this );
-	fftscope->show();
-
+	int n_devs = comediScope->getNcomediDevices();
 	int channels = comediScope->getNchannels();
+
+	if ((fftdev>=0)&&(fftdev<n_devs)&&(fftch>=0)&&(fftch<channels)) {
+		fftscope = new FFTScope( this );
+		fftscope->show();
+	} else {
+		fftscope = NULL;
+	}
 
 	tb_us = 1000000 / comediScope->getActualSamplingRate();
 
@@ -119,8 +124,6 @@ ComediRecord::ComediRecord( QWidget *parent,
 
 	int column = 1;
 	int row = 1;
-
-	int n_devs = comediScope->getNcomediDevices();
 
 	channelLabel=new QLabel**[n_devs];
 	channelCheckbox=new QCheckBox**[n_devs];
@@ -594,6 +597,7 @@ int main( int argc, char **argv )
                        "   -r <sampling rate for the data files> \n"
 		       "   -p <TCP port for receiving external data>\n"
 		       "   -t <default outp when external data hasn't been rec'd>\n"
+		       "   -x <device,channel> gives the spectrum of this dev,channel\n"
 		       "   -v prints version number\n"
 		       "   -h prints this help screen\n",
 		       argv[0]);

@@ -522,7 +522,8 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 				if (comediRecord->filterCheckbox->checkState()==Qt::Checked) {
 					value=iirnotch[n][i]->filter(value);
 				}
-				if ((n==fftdevno)&&(i==fftch)) 
+				if ((n==fftdevno) && (i==fftch) &&
+				    (comediRecord->fftscope))
 					comediRecord->fftscope->append(value);
 				// average response if TB is slower than sampling rate
 				adAvgBuffer[n][i] = adAvgBuffer[n][i] + value;
