@@ -36,7 +36,6 @@ public:
  **/
 	ComediRecord( QWidget *parent, 
 		      int channels = 1, 
-		      int maxrows = 8,
 		      float notch = 50.0,
 		      int port = 0,
 		      int num_of_devices = 1,

@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QSizePolicy>
 #include <QSettings>
+#include <QScrollArea>
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -41,11 +42,6 @@
 #define USBDUX_STRING "USB-DUX"
 #define PROGRAM_NAME "comedirecord"
 
-// for the layout
-// how we organise the channels switches
-#define MAXROWS 8
-
-
 class QCommentTextEdit : public QTextEdit {
 protected:
 	void keyPressEvent(QKeyEvent *event) {
@@ -60,7 +56,6 @@ protected:
 
 ComediRecord::ComediRecord( QWidget *parent, 
 			    int nchannels,
-			    int maxrows,
 			    float notchF,
 			    int port,
 			    int num_of_devices,
@@ -106,10 +101,22 @@ ComediRecord::ComediRecord( QWidget *parent,
 	mainLayout->setSpacing(0);
 	setLayout(mainLayout);
 
-	// this is the vertical layout for all the controls
-	QVBoxLayout *controlLayout = new QVBoxLayout(0);
+	// we create a scroll area
+	QScrollArea *controlScrollArea = new QScrollArea();
+
+	// this is the layout containing the scrollArea
+	QVBoxLayout *controlScrollLayout = new QVBoxLayout();
+	// to this layout we add just one widget which is the scroll area
+	controlScrollLayout->addWidget(controlScrollArea);
+
 	// the corresponding box which contains all the controls
 	QGroupBox *controlBox = new QGroupBox ();
+	controlBox->setStyleSheet("padding:0px;margin:0px;border:0px;");
+	controlBox->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
+						QSizePolicy::Minimum ) );
+
+	// now we create another layout which contains all the controls
+	QVBoxLayout * controlLayout = new QVBoxLayout(controlBox);
 
 	// this is the vertical layout for all the controls
 	QVBoxLayout *scopeLayout = new QVBoxLayout(0);
@@ -117,12 +124,14 @@ ComediRecord::ComediRecord( QWidget *parent,
 	QGroupBox *scopeGroup = new QGroupBox ();
 
 	QGridLayout *allChLayout = new QGridLayout;
-	QGroupBox *allChGroup = new QGroupBox ();
+
+	QGroupBox *allChGroup = new QGroupBox;
+	allChLayout->setSpacing(0);
 	allChGroup->setStyleSheet("padding:0px;margin:0px;border:0px;");
 	allChGroup->setLayout(allChLayout);
-	allChLayout->setSpacing(1);
+	allChGroup->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
+						QSizePolicy::Minimum ) );
 
-	int column = 1;
 	int row = 1;
 
 	channelLabel=new QLabel**[n_devs];
@@ -211,16 +220,9 @@ ComediRecord::ComediRecord( QWidget *parent,
 			gain[n][i]->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(gain[n][i]);
 
-			allChLayout->addWidget(channelgrp[n][i],row,column);
-
+			allChLayout->addWidget(channelgrp[n][i],row,1);
 			row++;
-			if (row > maxrows) {
-				row = 1;
-				column++;
-			}
 		}
-		column++;
-		row = 1;
 	}
 
 	settings.endGroup();
@@ -246,10 +248,11 @@ ComediRecord::ComediRecord( QWidget *parent,
 	QFont commentFont("Courier",10);
 	QFontMetrics commentMetrics(commentFont);
 	commentTextEdit->setMaximumHeight ( commentMetrics.height() );
+	commentTextEdit->setMaximumWidth ( 10*commentMetrics.width('X') );
 	commentTextEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	commentTextEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	commentTextEdit->setFont(commentFont);
-	QLabel *l=new QLabel("| Comment:");
+	QLabel *l=new QLabel("Comment:");
 	notchLayout->addWidget(l);
 	notchLayout->addWidget(commentTextEdit);
        	notchGroupBox->setLayout(notchLayout);
@@ -264,6 +267,10 @@ ComediRecord::ComediRecord( QWidget *parent,
 	recLayout->addWidget(recLabel);
 
 	filePushButton = new QPushButton( "&filename" );
+	filePushButton->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
+						    QSizePolicy::Fixed ));
+	filePushButton->setStyleSheet(
+		"background-color: white;border-style:outset;border-width: 2px;border-color: black;font: bold 14px; padding: 0px;");
 	connect(filePushButton, SIGNAL( clicked() ),
 		this, SLOT( enterFileName() ) );
 	recLayout->addWidget(filePushButton);
@@ -292,6 +299,9 @@ ComediRecord::ComediRecord( QWidget *parent,
 	tbLayout->addWidget(tbLabel);
 
 	tbIncPushButton = new QPushButton( "+" );
+
+	char tbStyle[]="background-color: white;border-style:outset;border-width: 2px;border-color: black;font: bold 20px;padding: 4px;";
+	tbIncPushButton->setStyleSheet(tbStyle);
 	tbIncPushButton->setMaximumSize ( tbMetrics.width(" + ") ,  
 					  tbMetrics.height() );
 	tbIncPushButton->setFont(tbFont);
@@ -300,6 +310,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	tbLayout->addWidget(tbIncPushButton);
 
 	tbDecPushButton = new QPushButton( "-" );
+	tbDecPushButton->setStyleSheet(tbStyle);
 	tbDecPushButton->setMaximumSize ( tbMetrics.width(" + ") ,  
 					  tbMetrics.height() );
 	tbDecPushButton->setFont(tbFont);	
@@ -311,6 +322,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	tbInfoTextEdit->setFont (tbFont);
 	QFontMetrics metricsTb(tbFont);
 	tbInfoTextEdit->setMaximumHeight ( commentMetrics.height() * 1.5 );
+	tbInfoTextEdit->setMaximumWidth ( commentMetrics.width('X') * 13 );
 	tbInfoTextEdit->setReadOnly(TRUE);
 	tbInfoTextEdit->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 	tbLayout->addWidget(tbInfoTextEdit);
@@ -335,13 +347,16 @@ ComediRecord::ComediRecord( QWidget *parent,
 	comediScope->setMinimumWidth ( 400 );
 	comediScope->setMinimumHeight ( 200 );
 
+	controlScrollArea->setWidget(controlBox);
+
 	scopeLayout->addWidget(comediScope);
 	scopeGroup->setLayout(scopeLayout);
 
-	controlBox->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
-						QSizePolicy::Fixed ) );
+	controlScrollArea->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
+						       QSizePolicy::Expanding ) );
+	controlScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-	mainLayout->addWidget(controlBox);
+	mainLayout->addWidget(controlScrollArea);
 	mainLayout->addWidget(scopeGroup);
 
 	changeTB();
@@ -520,7 +535,6 @@ int main( int argc, char **argv )
 {
 	int c;
 	int num_of_channels = 0;
-	int maxrows = MAXROWS;
 	int num_of_devices = 16;
 	const char *filename = NULL;
 	float notch = 50;
@@ -539,7 +553,6 @@ int main( int argc, char **argv )
 
 	settings.beginGroup(SETTINGS_GLOBAL);
 	num_of_channels = settings.value("num_of_channels",0).toInt();
-	maxrows = settings.value("maxrows",MAXROWS).toInt();
 	num_of_devices = settings.value("num_of_devices",16).toInt();
 	sampling_rate = settings.value("sampling_rate",1000).toInt();
 	first_dev_no = settings.value("first_dev_no",0).toInt();
@@ -554,9 +567,6 @@ int main( int argc, char **argv )
 		case 'x':
 			sscanf(optarg,"%d,%d",&fftdevno,&fftch);
 			printf("%s %d %d\n",optarg,fftdevno,fftch);
-			break;
-		case 'm':
-			maxrows = atoi(optarg);
 			break;
 		case 'f':
 			csv = atoi(optarg);
@@ -612,7 +622,6 @@ int main( int argc, char **argv )
 	settings.beginGroup(SETTINGS_GLOBAL);
 	settings.setValue("num_of_channels",num_of_channels);
 	settings.setValue("num_of_devices",num_of_devices);
-	settings.setValue("maxrows",maxrows);
 	settings.setValue("sampling_rate",sampling_rate);
 	settings.setValue("first_dev_no",first_dev_no);
 	settings.setValue("notch",notch);
@@ -621,7 +630,6 @@ int main( int argc, char **argv )
 
 	ComediRecord comediRecord(0,
 				  num_of_channels,
-				  maxrows,
 				  notch,
 				  port,
 				  num_of_devices,
