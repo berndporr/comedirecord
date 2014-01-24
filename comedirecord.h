@@ -29,6 +29,10 @@ class ComediRecord;
 // the larger the value the slower
 #define INERTIA_FOR_DC_DETECTION 1000
 
+#define HIGHPASS_FREQUENCY 1 // Hz
+
+#define LOWPASS_FREQUENCY 5 // Hz
+
 class ComediRecord : public QWidget
 {
 

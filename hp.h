@@ -4,7 +4,7 @@
 #include <QCheckBox>
 #include <Iir.h>
 
-#define HPORDER 2
+#define HPORDER 4
 
 class Hp : public QCheckBox {
 

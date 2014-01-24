@@ -225,7 +225,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			hpLabel[n][i]->setFont(voltageFont);
 			hbox[n][i]->addWidget(hpLabel[n][i]);
 
-			hp[n][i] = new Hp(comediScope->getActualSamplingRate());
+			hp[n][i] = new Hp(comediScope->getActualSamplingRate(),HIGHPASS_FREQUENCY);
 			hp[n][i] ->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(hp[n][i]);
 
@@ -234,7 +234,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			lpLabel[n][i]->setFont(voltageFont);
 			hbox[n][i]->addWidget(lpLabel[n][i]);
 
-			lp[n][i] = new Lp(comediScope->getActualSamplingRate());
+			lp[n][i] = new Lp(comediScope->getActualSamplingRate(),LOWPASS_FREQUENCY);
 			lp[n][i] ->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(lp[n][i]);
 

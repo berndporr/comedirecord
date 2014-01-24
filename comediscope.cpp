@@ -439,8 +439,7 @@ void ComediScope::paintData(float** buffer) {
 			    isActive()) {
 				paint.setPen(penData[act%3]);
 				float gain=comediRecord->gain[n][i]->getGain();
-				int ch = comediRecord->channel[n][i]->getChannel();
-				float value = buffer[n][ch] * gain;
+				float value = buffer[n][i] * gain;
 				int yZero=base*act-(int)((0-minV)*dy);
 				int yTmp=base*act-(int)((value-minV)*dy);
 				ypos[n][i][xpos+1]=yTmp;
@@ -506,30 +505,33 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 			
 			for(int i=0;i<channels_in_use;i++) {
 				int sample;
-				if(subdev_flags & SDF_LSAMPL) {
-					sample = ((int)((lsampl_t *)buffer)[i]);
-				} else {
-					sample = ((int)((sampl_t *)buffer)[i]);
+				if (comediRecord->channel[n][i]->isActive()) {
+					int ch = comediRecord->channel[n][i]->getChannel();
+					if(subdev_flags & SDF_LSAMPL) {
+						sample = ((int)((lsampl_t *)buffer)[ch]);
+					} else {
+						sample = ((int)((sampl_t *)buffer)[ch]);
+					}
+					// store raw data
+					daqData[n][i] = sample;
+					// convert data to physical units for plotting
+					float value = comedi_to_phys(sample,
+								     crange[n],
+								     maxdata[n]);
+					// filtering
+					value = comediRecord->dcSub[n][i]->filter(value);
+					value = comediRecord->hp[n][i]->filter(value);
+					value = comediRecord->lp[n][i]->filter(value);
+					// remove 50Hz
+					if (comediRecord->filterCheckbox->checkState()==Qt::Checked) {
+						value=iirnotch[n][i]->filter(value);
+					}
+					if ((n==fftdevno) && (ch==fftch) &&
+					    (comediRecord->fftscope))
+						comediRecord->fftscope->append(value);
+					// average response if TB is slower than sampling rate
+					adAvgBuffer[n][i] = adAvgBuffer[n][i] + value;
 				}
-				// store raw data
-				daqData[n][i] = sample;
-				// convert data to physical units for plotting
-				float value = comedi_to_phys(sample,
-							     crange[n],
-							     maxdata[n]);
-				// filtering
-				value = comediRecord->dcSub[n][i]->filter(value);
-				value = comediRecord->hp[n][i]->filter(value);
-				value = comediRecord->lp[n][i]->filter(value);
-				// remove 50Hz
-				if (comediRecord->filterCheckbox->checkState()==Qt::Checked) {
-					value=iirnotch[n][i]->filter(value);
-				}
-				if ((n==fftdevno) && (i==fftch) &&
-				    (comediRecord->fftscope))
-					comediRecord->fftscope->append(value);
-				// average response if TB is slower than sampling rate
-				adAvgBuffer[n][i] = adAvgBuffer[n][i] + value;
 			}
 		}
 
