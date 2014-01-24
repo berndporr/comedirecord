@@ -14,6 +14,7 @@ Gain::Gain() : QComboBox() {
 	addItem(tr("x10"),10);
 	addItem(tr("x20"),20);
 	addItem(tr("x50"),50);
+	addItem(tr("x100"),100);
 	gain = 1;
 
 	connect(this,
