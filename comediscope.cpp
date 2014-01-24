@@ -516,8 +516,10 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 				float value = comedi_to_phys(sample,
 							     crange[n],
 							     maxdata[n]);
-				// remove DC
+				// filtering
 				value = comediRecord->dcSub[n][i]->filter(value);
+				value = comediRecord->hp[n][i]->filter(value);
+				value = comediRecord->lp[n][i]->filter(value);
 				// remove 50Hz
 				if (comediRecord->filterCheckbox->checkState()==Qt::Checked) {
 					value=iirnotch[n][i]->filter(value);

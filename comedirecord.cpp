@@ -141,7 +141,11 @@ ComediRecord::ComediRecord( QWidget *parent,
 	hbox=new QHBoxLayout**[n_devs];
 	gain=new Gain**[n_devs];
 	dcSub=new DCSub**[n_devs];
+	hp=new Hp**[n_devs];
+	lp=new Lp**[n_devs];
 	subDClabel=new QLabel**[n_devs];
+	hpLabel=new QLabel**[n_devs];
+	lpLabel=new QLabel**[n_devs];
 	
 	// to the get the stuff a bit closer together
 	char styleSheet[] = "padding:0px;margin:0px;border:0px;";
@@ -163,6 +167,10 @@ ComediRecord::ComediRecord( QWidget *parent,
 		gain[n]=new Gain*[channels];
 		dcSub[n]=new DCSub*[channels];
 		subDClabel[n]=new QLabel*[channels];
+		hp[n]=new Hp*[channels];
+		hpLabel[n]= new QLabel*[channels];
+		lp[n]=new Lp*[channels];
+		lpLabel[n]= new QLabel*[channels];
 		for(int i=0;i<channels;i++) {
 			// create the group for a channel
 			char tmp[10];
@@ -171,7 +179,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			// the corresponding layout
 			hbox[n][i] = new QHBoxLayout();
 			channelgrp[n][i]->setLayout(hbox[n][i]);
-			sprintf(tmp,"%d",i);
+			sprintf(tmp,"%02d",i);
 			channelLabel[n][i] = new QLabel(tmp);
 			channelLabel[n][i]->setStyleSheet(styleSheet);
 			channelLabel[n][i]->setFont(voltageFont);
@@ -207,7 +215,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			voltageTextEdit[n][i]->setFont(voltageFont);
 			// voltageTextEdit[i]->setLineWidth(1);
 
-			subDClabel[n][i] = new QLabel("-DC");
+			subDClabel[n][i] = new QLabel(" -DC");
 			subDClabel[n][i]->setStyleSheet(styleSheet);
 			subDClabel[n][i]->setFont(voltageFont);
 			hbox[n][i]->addWidget(subDClabel[n][i]);
@@ -215,6 +223,24 @@ ComediRecord::ComediRecord( QWidget *parent,
 			dcSub[n][i] = new DCSub((float)INERTIA_FOR_DC_DETECTION);
 			dcSub[n][i]->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(dcSub[n][i]);
+
+			hpLabel[n][i] = new QLabel(" HP");
+			hpLabel[n][i]->setStyleSheet(styleSheet);
+			hpLabel[n][i]->setFont(voltageFont);
+			hbox[n][i]->addWidget(hpLabel[n][i]);
+
+			hp[n][i] = new Hp(comediScope->getActualSamplingRate());
+			hp[n][i] ->setStyleSheet(styleSheet);
+			hbox[n][i]->addWidget(hp[n][i]);
+
+			lpLabel[n][i] = new QLabel(" LP");
+			lpLabel[n][i]->setStyleSheet(styleSheet);
+			lpLabel[n][i]->setFont(voltageFont);
+			hbox[n][i]->addWidget(lpLabel[n][i]);
+
+			lp[n][i] = new Lp(comediScope->getActualSamplingRate());
+			lp[n][i] ->setStyleSheet(styleSheet);
+			hbox[n][i]->addWidget(lp[n][i]);
 
 			gain[n][i] = new Gain();
 			gain[n][i]->setStyleSheet(styleSheet);

@@ -20,6 +20,8 @@ class ComediRecord;
 #include "comediscope.h"
 #include "gain.h"
 #include "dc_sub.h"
+#include "hp.h"
+#include "lp.h"
 #include "fftscope.h"
 
 // defines how quickly the DC detector follows the signal
@@ -77,6 +79,9 @@ public:
 
     QLabel*** subDClabel;
 
+    QLabel*** hpLabel;
+
+    QLabel*** lpLabel;
 /**
  * Array of check-boxes which switch channels on and off
  **/
@@ -113,7 +118,20 @@ public:
      **/
     Gain*** gain;
 
+    /**
+     * subtracting DC
+     **/
     DCSub*** dcSub;
+
+    /**
+     * highpass filter
+     **/
+    Hp*** hp;
+
+    /**
+     * lowpass filter
+     **/
+    Lp*** lp;
 
     /**
      * The widget which contains the graphical plots of the AD-data
