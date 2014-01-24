@@ -330,7 +330,7 @@ void ComediScope::writeFile() {
 	for(int n=0;n<nComediDevices;n++) {
 		for(int i=0;i<channels_in_use;i++) {
 			if (comediRecord->
-			    channelCheckbox[n][i]->isChecked()
+			    channel[n][i]->isActive()
 				) {
 				if (comediRecord->
 				    rawCheckbox->isChecked()) {
@@ -410,7 +410,7 @@ void ComediScope::paintData(float** buffer) {
 
 	for(int n=0;n<nComediDevices;n++) {
 		for(int i=0;i<channels_in_use;i++) {
-			if (comediRecord->channelCheckbox[n][i]->isChecked()) {
+			if (comediRecord->channel[n][i]->isActive()) {
 				num_channels++;	
 			}
 		}
@@ -435,11 +435,12 @@ void ComediScope::paintData(float** buffer) {
 		float dy=(float)base/(float)(maxV-minV);
 		for(int i=0;i<channels_in_use;i++) {
 			if (comediRecord->
-			    channelCheckbox[n][i]->
-			    isChecked()) {
+			    channel[n][i]->
+			    isActive()) {
 				paint.setPen(penData[act%3]);
 				float gain=comediRecord->gain[n][i]->getGain();
-				float value = buffer[n][i] * gain;
+				int ch = comediRecord->channel[n][i]->getChannel();
+				float value = buffer[n][ch] * gain;
 				int yZero=base*act-(int)((0-minV)*dy);
 				int yTmp=base*act-(int)((value-minV)*dy);
 				ypos[n][i][xpos+1]=yTmp;

@@ -19,6 +19,7 @@ class ComediRecord;
 
 #include "comediscope.h"
 #include "gain.h"
+#include "channel.h"
 #include "dc_sub.h"
 #include "hp.h"
 #include "lp.h"
@@ -82,10 +83,6 @@ public:
     QLabel*** hpLabel;
 
     QLabel*** lpLabel;
-/**
- * Array of check-boxes which switch channels on and off
- **/
-    QCheckBox*** channelCheckbox;
 
     /**
      * Notch filter on?
@@ -112,6 +109,11 @@ public:
      * Array of the voltages
      **/
     QTextEdit***  voltageTextEdit;
+
+    /**
+     * Array for the gain settings
+     **/
+    Channel*** channel;
 
     /**
      * Array for the gain settings

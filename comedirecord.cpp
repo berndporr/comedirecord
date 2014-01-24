@@ -135,7 +135,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	int row = 1;
 
 	channelLabel=new QLabel**[n_devs];
-	channelCheckbox=new QCheckBox**[n_devs];
+	channel=new Channel**[n_devs];
 	voltageTextEdit=new QTextEdit**[n_devs];
 	channelgrp=new QGroupBox**[n_devs];
 	hbox=new QHBoxLayout**[n_devs];
@@ -160,7 +160,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	int nch_enabled = 0;
 	for(int n=0;n<n_devs;n++) {
 		channelLabel[n]=new QLabel*[channels];
-		channelCheckbox[n]=new QCheckBox*[channels];
+		channel[n]=new Channel*[channels];
 		voltageTextEdit[n]=new QTextEdit*[channels];
 		channelgrp[n]=new QGroupBox*[channels];
 		hbox[n]=new QHBoxLayout*[channels];
@@ -179,25 +179,21 @@ ComediRecord::ComediRecord( QWidget *parent,
 			// the corresponding layout
 			hbox[n][i] = new QHBoxLayout();
 			channelgrp[n][i]->setLayout(hbox[n][i]);
-			sprintf(tmp,"%02d",i);
+			sprintf(tmp,"%02d:",i);
 			channelLabel[n][i] = new QLabel(tmp);
 			channelLabel[n][i]->setStyleSheet(styleSheet);
 			channelLabel[n][i]->setFont(voltageFont);
 			hbox[n][i]->addWidget(channelLabel[n][i]);
 			hbox[n][i]->setSpacing(1);
-			channelCheckbox[n][i] = new QCheckBox;
+			channel[n][i] = new Channel(channels);
 			char tmpCh[128];
 			sprintf(tmpCh,CHSETTING_FORMAT,n,i);
-			channelCheckbox[n][i] -> setChecked( 
-				settings.value(tmpCh,0).toBool() ); 
-			if ( channelCheckbox[n][i] -> isChecked() )
+			channel[n][i] -> setChannel(
+				settings.value(tmpCh,i).toInt() ); 
+			if ( channel[n][i] -> isActive() )
 				nch_enabled++;
-			channelCheckbox[n][i]->setStyleSheet(styleSheet);
-			hbox[n][i]->addWidget(channelCheckbox[n][i]);
-			channelgrp[n][i]->connect(channelCheckbox[n][i], 
-					       SIGNAL( clicked() ),
-					       this, 
-					       SLOT( clearEvent() ) );
+			channel[n][i]->setStyleSheet(styleSheet);
+			hbox[n][i]->addWidget(channel[n][i]);
 			voltageTextEdit[n][i]=new QTextEdit(channelgrp[n][i]);
 			voltageTextEdit[n][i]->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(voltageTextEdit[n][i]);
@@ -256,8 +252,9 @@ ComediRecord::ComediRecord( QWidget *parent,
 	controlLayout->addWidget(allChGroup);
 
 	// at least one should be active not to make the user nervous.
+	printf("Number of channels enabled = %d\n",nch_enabled);
 	if (nch_enabled==0)
-		channelCheckbox[0][0]->setChecked( TRUE );
+		channel[0][0]->setChannel( 0 );
 
 	// notch filter
 	// create a group for the notch filter
@@ -381,6 +378,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	controlScrollArea->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
 						       QSizePolicy::Expanding ) );
 	controlScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	controlScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	mainLayout->addWidget(controlScrollArea);
 	mainLayout->addWidget(scopeGroup);
@@ -407,7 +405,7 @@ ComediRecord::~ComediRecord() {
 			char tmp[128];
 			sprintf(tmp,CHSETTING_FORMAT,n,i);
 			settings.setValue(tmp, 
-					  channelCheckbox[n][i] -> isChecked() );
+					  channel[n][i] -> getChannel() );
 		}
 	}
 	settings.endGroup();
@@ -422,7 +420,7 @@ void ComediRecord::disableControls() {
 	int channels = comediScope->getNchannels();
 	for(int n=0;n<n_devs;n++) {
 		for(int i=0;i<channels;i++) {
-			channelCheckbox[n][i]->setEnabled( false );
+			channel[n][i]->setEnabled( false );
 		}
 	}
 }
@@ -435,7 +433,7 @@ void ComediRecord::enableControls() {
 	int channels = comediScope->getNchannels();
 	for(int n=0;n<n_devs;n++) {
 		for(int i=0;i<channels;i++) {
-			channelCheckbox[n][i]->setEnabled( true );
+			channel[n][i]->setEnabled( true );
 		}
 	}
 }
