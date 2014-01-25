@@ -107,14 +107,6 @@ ComediRecord::ComediRecord( QWidget *parent,
 	mainLayout->setSpacing(0);
 	setLayout(mainLayout);
 
-	// we create a scroll area
-	QScrollArea *controlScrollArea = new QScrollArea();
-
-	// this is the layout containing the scrollArea
-	QVBoxLayout *controlScrollLayout = new QVBoxLayout();
-	// to this layout we add just one widget which is the scroll area
-	controlScrollLayout->addWidget(controlScrollArea);
-
 	// the corresponding box which contains all the controls
 	QGroupBox *controlBox = new QGroupBox ();
 	controlBox->setStyleSheet("padding:0px;margin:0px;border:0px;");
@@ -129,8 +121,16 @@ ComediRecord::ComediRecord( QWidget *parent,
 	// the corresponding box which contains all the controls
 	QGroupBox *scopeGroup = new QGroupBox ();
 
-	QGridLayout *allChLayout = new QGridLayout;
 
+	// we create a scroll area
+	QScrollArea *allChScrollArea = new QScrollArea();
+	// this is the layout containing the scrollArea
+	QVBoxLayout *allChScrollLayout = new QVBoxLayout();
+	// to this layout we add just one widget which is the scroll area
+	allChScrollLayout->addWidget(allChScrollArea);
+
+
+	QGridLayout *allChLayout = new QGridLayout;
 	QGroupBox *allChGroup = new QGroupBox;
 	allChLayout->setSpacing(0);
 	allChGroup->setStyleSheet("padding:0px;margin:0px;border:0px;");
@@ -257,7 +257,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 
 	settings.endGroup();
 
-	controlLayout->addWidget(allChGroup);
+	controlLayout->addWidget(allChScrollArea);
+	allChScrollArea->setWidget(allChGroup);
 
 	// at least one should be active not to make the user nervous.
 	if (nch_enabled==0)
@@ -387,17 +388,15 @@ ComediRecord::ComediRecord( QWidget *parent,
 	comediScope->setMinimumWidth ( 400 );
 	comediScope->setMinimumHeight ( 200 );
 
-	controlScrollArea->setWidget(controlBox);
-
 	scopeLayout->addWidget(comediScope);
 	scopeGroup->setLayout(scopeLayout);
 
-	controlScrollArea->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
+	allChScrollArea->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
 						       QSizePolicy::Expanding ) );
-	controlScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-	controlScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	allChScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	allChScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-	mainLayout->addWidget(controlScrollArea);
+	mainLayout->addWidget(controlBox);
 	mainLayout->addWidget(scopeGroup);
 
 	changeTB();
