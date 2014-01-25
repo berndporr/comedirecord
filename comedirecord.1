@@ -18,6 +18,10 @@ also listen on a TCP port which allows the logging of additional
 information from external programs or just logging comments
 connected to telnet.
 .TP
+\-i
+ignores last saved configuration and resets all settings to
+default values which which should work with most DAQ boards.
+.TP
 \-r SAMPLINGRATE
 sets both the internal sampling rate and the sampling
 rate for the data files. If a slower timebase is selected
@@ -30,12 +34,18 @@ sets the number of channels
 \-f FORMAT
 set data format for ASCII files: 0 = space separated, 1 = csv
 .TP
-\-m CHANNEL_ROWS
-sets the number of channels per row on screen. This can be used
-to create more space for the actual plot.
-.TP
 \-n FREQUENCY
 sets the notch filter frequency to remove unwanted mains interference.
+.TP
+\-a FREQUENCY
+sets the lowpass filter frequency to smooth out signals
+.TP
+\-b FREQUENCY
+sets the highpass filter frequency to remove low frequency baseline shifts
+.TP
+\-x DEV,CH,MAXF
+displays a Fourier transform of channel CH of device DEV with maximum
+frequency MAXF.
 .TP
 \-d DEVICES
 sets the maximum number of comedi devices (default is that all
