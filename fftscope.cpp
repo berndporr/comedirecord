@@ -44,18 +44,24 @@ FFTScope::FFTScope( ComediRecord *parent, int fft_buffer_size)
 	current_entry = 0;
 	filled = 0;
 
+	nFreqSamples = round(((double)(comedirecord->comediScope->fftmaxfrequency))/
+			     (comedirecord->comediScope->sampling_rate/((double)buffer_size)));
+	nFreqSamples++;
+	if (nFreqSamples > (buffer_size/2)) {
+		nFreqSamples = (buffer_size/2);
+	}
 	// plotting
 	fftPlot = new QwtPlot(this);
 	fftPlot->setAxisAutoScale(QwtPlot::yLeft,true);
 	fftPlot->setAxisAutoScale(QwtPlot::xBottom,true);
 	QwtPlotCurve *fftCurve = new QwtPlotCurve("FFT");
-	x = new double[buffer_size/2];
-	y = new double[buffer_size/2];
-	for(int i=0;i<buffer_size/2;i++) {
+	x = new double[nFreqSamples];
+	y = new double[nFreqSamples];
+	for(int i=0;i<nFreqSamples;i++) {
 		x[i]=0.0;
 		y[i]=0.0;
 	}
-	fftCurve->setRawSamples(x,y,buffer_size/2);
+	fftCurve->setRawSamples(x,y,nFreqSamples);
 	fftCurve->attach(fftPlot);
 	setCentralWidget(fftPlot);
 }
@@ -88,9 +94,11 @@ void FFTScope::updateFFT()
 
 		// plot the spectrum
 		float yMax = 1E-10;
-		for (i = 0; i < (buffer_size/2); i++)
+		double f = 1;
+		for (i = 0; i < nFreqSamples; i++)
 		{
-			x[i] =  ((double)i)*comedirecord->comediScope->sampling_rate/((double)buffer_size);
+			f =  ((double)i)*comedirecord->comediScope->sampling_rate/((double)buffer_size);
+			x[i] = f;
 			double a = out[i][0];
 			double b = out[i][1];
 			y[i] = sqrt(a*a+b*b);
@@ -99,7 +107,7 @@ void FFTScope::updateFFT()
 		y[0]=0.0;
 
 		fftPlot->setAxisScale(QwtPlot::yLeft,0,yMax);
-		fftPlot->setAxisScale(QwtPlot::xBottom,0,comedirecord->comediScope->sampling_rate/2);
+		fftPlot->setAxisScale(QwtPlot::xBottom,0,f);
 		fftw_destroy_plan ( plan_forward );
 		fftPlot->replot();
 		filled = 0;

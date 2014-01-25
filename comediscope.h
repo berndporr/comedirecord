@@ -42,7 +42,9 @@ public:
 		 int first_dev_no = 0,
 		 int req_sampling_rate = 1000,
 		 const char *defaultTextStringForMissingExtData = NULL,
-		 int fftdevnumber = -1, int fftchannel = -1
+		 int fftdevnumber = -1, 
+		 int fftchannel = -1,
+		 int fftmaxf = -1
 	    );
 /**
  * Destructor: close the file if necessary
@@ -164,6 +166,8 @@ private:
      **/
     int         tb_init;
 
+    int eraseFlag;
+
 private:
     /**
      * counter for the tb. If zero the average is
@@ -279,8 +283,10 @@ public:
  **/
     int getActualSamplingRate() {return sampling_rate;};
 
+// FFT
     int fftdevno;
     int fftch;
+    int fftmaxfrequency;
 
 };
 

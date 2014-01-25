@@ -64,7 +64,9 @@ ComediRecord::ComediRecord( QWidget *parent,
 			    const char* defaultTextStringForMissingExtData,
 			    const char* filename,
 			    int csv,
-			    int fftdev, int fftch
+			    int fftdev, 
+			    int fftch,
+			    int fftmaxf
 	)
     : QWidget( parent ) {
 
@@ -76,7 +78,9 @@ ComediRecord::ComediRecord( QWidget *parent,
 				    first_dev_no,
 				    requrested_sampling_rate,
 				    defaultTextStringForMissingExtData,
-				    fftdev, fftch
+				    fftdev, 
+				    fftch,
+				    fftmaxf
 		);
 
 	int n_devs = comediScope->getNcomediDevices();
@@ -350,6 +354,15 @@ ComediRecord::ComediRecord( QWidget *parent,
 	tbInfoTextEdit->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 	tbLayout->addWidget(tbInfoTextEdit);
 
+	tbResetPushButton = new QPushButton( "restart" );
+	tbResetPushButton->setStyleSheet("background-color: white;border-style:outset;border-width: 2px;border-color: black;font: bold 10px;padding: 4px;");
+	tbResetPushButton->setMaximumSize ( tbMetrics.width("restart ") ,  
+					  tbMetrics.height() );
+	tbResetPushButton->setFont(tbFont);	
+	tbgrp->connect(tbResetPushButton, SIGNAL( clicked() ),
+		       this, SLOT( resetTbEvent() ) );
+	tbLayout->addWidget(tbResetPushButton);
+
 	tbgrp->setLayout(tbLayout);
 	controlLayout->addWidget(tbgrp);
 
@@ -487,11 +500,6 @@ void ComediRecord::recstartstop(int)
     }
 }
 
-void ComediRecord::clearEvent() {
-	comediScope->clearScreen();
-}
-
-
 void ComediRecord::incTbEvent() {
 	if (tb_us<1000000) {
 		char tmp[30];
@@ -555,6 +563,11 @@ void ComediRecord::changeTB() {
 	comediScope->setTB(tb_us);
 }
 
+void ComediRecord::resetTbEvent() {
+	    comediScope->clearScreen();
+};
+
+
 int main( int argc, char **argv )
 {
 	int c;
@@ -568,6 +581,7 @@ int main( int argc, char **argv )
 	int csv = 0;
 	int fftdevno = -1;
 	int fftch = -1;
+	int fftmaxf = -1;
 	const char* defaultTextStringForMissingExtData = NULL;
 
 	QSettings settings(QSettings::IniFormat, 
@@ -589,8 +603,7 @@ int main( int argc, char **argv )
 	while (-1 != (c = getopt(argc, argv, "x:m:l:t:r:d:p:f:c:n:hv"))) {
 		switch (c) {
 		case 'x':
-			sscanf(optarg,"%d,%d",&fftdevno,&fftch);
-			printf("%s %d %d\n",optarg,fftdevno,fftch);
+			sscanf(optarg,"%d,%d,%d",&fftdevno,&fftch,&fftmaxf);
 			break;
 		case 'f':
 			csv = atoi(optarg);
@@ -631,7 +644,7 @@ int main( int argc, char **argv )
                        "   -r <sampling rate for the data files> \n"
 		       "   -p <TCP port for receiving external data>\n"
 		       "   -t <default outp when external data hasn't been rec'd>\n"
-		       "   -x <device,channel> gives the spectrum of this dev,channel\n"
+		       "   -x <device,channel,max_freq> gives the spectrum of this dev,channel,max frequency\n"
 		       "   -v prints version number\n"
 		       "   -h prints this help screen\n",
 		       argv[0]);
@@ -663,7 +676,8 @@ int main( int argc, char **argv )
 				  filename,
 				  csv,
 				  fftdevno,
-				  fftch
+				  fftch,
+				  fftmaxf
 		);
 
 	// show widget

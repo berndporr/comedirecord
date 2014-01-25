@@ -28,7 +28,7 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 			  int first_dev_no,
 			  int req_sampling_rate,
 			  const char* defaultTextStringForMissingExtData,
-			  int fftdevnumber, int fftchannel
+			  int fftdevnumber, int fftchannel, int fftmaxf
 	)
     : QWidget( comediRecordTmp ) {
 
@@ -37,9 +37,12 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	tb_init=1;
 	tb_counter=tb_init;
 	comediRecord=comediRecordTmp;
+	// erase plot
+	eraseFlag = 1;
 
 	fftdevno = fftdevnumber;
 	fftch = fftchannel;
+	fftmaxfrequency = fftmaxf;
 
 	// for ASCII
 	rec_file=NULL;
@@ -406,6 +409,11 @@ void ComediScope::paintData(float** buffer) {
 	QPen penWhite(Qt::white,2);
 	int w = width();
 	int h = height();
+	if (eraseFlag) {
+		paint.fillRect(0,0,w,h,QColor(255,255,255));
+		eraseFlag = 0;
+		xpos = 0;
+	}
 	num_channels=0;
 
 	for(int n=0;n<nComediDevices;n++) {
@@ -590,6 +598,6 @@ void ComediScope::timerEvent( QTimerEvent * )
 
 void ComediScope::clearScreen()
 {
-	xpos=0;
+	eraseFlag = 1;
 	repaint();
 }

@@ -52,7 +52,8 @@ public:
 		      const char* filename = NULL,
 		      int csv = 0,
 		      int fftdevnumber = -1,
-		      int fftchannel = -1
+		      int fftchannel = -1,
+		      int fftmaxf = -1
 		);
 	
 	/**
@@ -165,6 +166,11 @@ public:
      **/
     QPushButton *tbDecPushButton;
 
+    /**
+     * Button: Reset screen
+     **/
+    QPushButton *tbResetPushButton;
+
 /**
  * Text-field: time between samples
  **/
@@ -182,14 +188,14 @@ private slots:
     void incTbEvent();
 
 /**
+ * Reset screen
+ **/
+    void resetTbEvent(); 
+
+/**
  * Button to decrease the time-base has been pressed
  **/
     void decTbEvent();
-    
-    /**
-     * Button to clear the screen has been pressed
-     **/
-    void clearEvent();
     
     /**
      * Enter a new filename

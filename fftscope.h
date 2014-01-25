@@ -59,6 +59,7 @@ private:
 	ComediRecord *comedirecord;
 	double *x;
 	double *y;
+	int nFreqSamples;
 
 };
 
