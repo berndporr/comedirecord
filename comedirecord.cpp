@@ -115,12 +115,10 @@ ComediRecord::ComediRecord( QWidget *parent,
 
 	// now we create another layout which contains all the controls
 	QVBoxLayout * controlLayout = new QVBoxLayout(controlBox);
-
 	// this is the vertical layout for all the controls
 	QVBoxLayout *scopeLayout = new QVBoxLayout(0);
 	// the corresponding box which contains all the controls
 	QGroupBox *scopeGroup = new QGroupBox ();
-
 
 	// we create a scroll area
 	QScrollArea *allChScrollArea = new QScrollArea();
@@ -136,7 +134,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	allChGroup->setStyleSheet("padding:0px;margin:0px;border:0px;");
 	allChGroup->setLayout(allChLayout);
 	allChGroup->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
-						QSizePolicy::Minimum ) );
+						QSizePolicy::Expanding ) );
 
 	int row = 1;
 
@@ -264,6 +262,11 @@ ComediRecord::ComediRecord( QWidget *parent,
 	if (nch_enabled==0)
 		channel[0][0]->setChannel( 0 );
 
+	// now we create another layout which contains all the remaining controls
+	QVBoxLayout * restLayout = new QVBoxLayout;
+	// the corresponding box which contains all the controls
+	QGroupBox *restGroup = new QGroupBox;
+
 	// notch filter
 	// create a group for the notch filter
 	QGroupBox* notchGroupBox = new QGroupBox();
@@ -287,8 +290,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 	notchLayout->addWidget(l);
 	notchLayout->addWidget(commentTextEdit);
        	notchGroupBox->setLayout(notchLayout);
+	restLayout->addWidget(notchGroupBox);
 
-	controlLayout->addWidget(notchGroupBox);
 
 	// group for the record stuff
 	QGroupBox* recGroupBox = new QGroupBox();
@@ -317,7 +320,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 	recLayout->addWidget(recPushButton);
 
 	recGroupBox->setLayout(recLayout);
-	controlLayout->addWidget(recGroupBox);
+	restLayout->addWidget(recGroupBox);
+
 
 	// group for the time base
 	QGroupBox *tbgrp = new QGroupBox();
@@ -368,7 +372,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	tbLayout->addWidget(tbResetPushButton);
 
 	tbgrp->setLayout(tbLayout);
-	controlLayout->addWidget(tbgrp);
+	restLayout->addWidget(tbgrp);
 
 	QGroupBox *statusgrp = new QGroupBox;
 	QHBoxLayout *statusLayout = new QHBoxLayout;
@@ -381,7 +385,12 @@ ComediRecord::ComediRecord( QWidget *parent,
 	statusLabel = new QLabel(status);
 	statusLayout->addWidget(statusLabel);
 	statusgrp->setLayout(statusLayout);
-	controlLayout->addWidget(statusgrp);
+	restLayout->addWidget(statusgrp);
+
+	restGroup->setLayout(restLayout);
+	controlLayout->addWidget(restGroup);
+	restGroup->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
+						QSizePolicy::Fixed ) );
 
 	controlBox->setLayout(controlLayout);
 
@@ -392,7 +401,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	scopeGroup->setLayout(scopeLayout);
 
 	allChScrollArea->setSizePolicy ( QSizePolicy(QSizePolicy::Fixed,
-						       QSizePolicy::Expanding ) );
+						     QSizePolicy::Expanding ) );
 	allChScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	allChScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
