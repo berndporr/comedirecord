@@ -66,7 +66,9 @@ ComediRecord::ComediRecord( QWidget *parent,
 			    int csv,
 			    int fftdev, 
 			    int fftch,
-			    int fftmaxf
+			    int fftmaxf,
+			    float lpFreq,
+			    float hpFreq
 	)
     : QWidget( parent ) {
 
@@ -229,7 +231,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 			hpLabel[n][i]->setFont(voltageFont);
 			hbox[n][i]->addWidget(hpLabel[n][i]);
 
-			hp[n][i] = new Hp(comediScope->getActualSamplingRate(),HIGHPASS_FREQUENCY);
+			hp[n][i] = new Hp(comediScope->getActualSamplingRate(),
+					  hpFreq);
 			hp[n][i] ->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(hp[n][i]);
 
@@ -238,7 +241,8 @@ ComediRecord::ComediRecord( QWidget *parent,
 			lpLabel[n][i]->setFont(voltageFont);
 			hbox[n][i]->addWidget(lpLabel[n][i]);
 
-			lp[n][i] = new Lp(comediScope->getActualSamplingRate(),LOWPASS_FREQUENCY);
+			lp[n][i] = new Lp(comediScope->getActualSamplingRate(),
+					  lpFreq);
 			lp[n][i] ->setStyleSheet(styleSheet);
 			hbox[n][i]->addWidget(lp[n][i]);
 
@@ -370,9 +374,10 @@ ComediRecord::ComediRecord( QWidget *parent,
 	QHBoxLayout *statusLayout = new QHBoxLayout;
 
 	char status[256];
-	sprintf(status,"comedi devs: %d, sampling rate: %d Hz",
+	sprintf(status,"# of devs: %d, Fs: %d Hz, lp: %1.1f Hz, hp: %1.1f Hz",
 		comediScope->getNcomediDevices(),
-		comediScope->getActualSamplingRate());
+		comediScope->getActualSamplingRate(),
+		lpFreq,hpFreq);
 	statusLabel = new QLabel(status);
 	statusLayout->addWidget(statusLabel);
 	statusgrp->setLayout(statusLayout);
@@ -582,6 +587,9 @@ int main( int argc, char **argv )
 	int fftdevno = -1;
 	int fftch = -1;
 	int fftmaxf = -1;
+	float lpFreq = 10;
+	float hpFreq = 1;
+	int ignoreSettings = 0;
 	const char* defaultTextStringForMissingExtData = NULL;
 
 	QSettings settings(QSettings::IniFormat, 
@@ -589,18 +597,26 @@ int main( int argc, char **argv )
 			   USBDUX_STRING,
 			   PROGRAM_NAME);
 
-	settings.beginGroup(SETTINGS_GLOBAL);
-	num_of_channels = settings.value("num_of_channels",0).toInt();
-	num_of_devices = settings.value("num_of_devices",16).toInt();
-	sampling_rate = settings.value("sampling_rate",1000).toInt();
-	first_dev_no = settings.value("first_dev_no",0).toInt();
-	notch = settings.value("notch",50).toFloat();
-	csv = settings.value("csv",0).toInt();
-	settings.endGroup();
 
+
+	for(int i = 0;i<argc;i++) {
+		if (strstr(argv[i],"-i")) ignoreSettings = 1;	
+	}
+
+	if (!ignoreSettings) {
+		settings.beginGroup(SETTINGS_GLOBAL);
+		num_of_channels = settings.value("num_of_channels",0).toInt();
+		num_of_devices = settings.value("num_of_devices",16).toInt();
+		sampling_rate = settings.value("sampling_rate",1000).toInt();
+		first_dev_no = settings.value("first_dev_no",0).toInt();
+		notch = settings.value("notch",50).toFloat();
+		csv = settings.value("csv",0).toInt();
+		settings.endGroup();
+	}
+	
 	QApplication a( argc, argv );		// create application object
 
-	while (-1 != (c = getopt(argc, argv, "x:m:l:t:r:d:p:f:c:n:hv"))) {
+	while (-1 != (c = getopt(argc, argv, "a:b:x:l:t:r:d:p:f:c:n:hvi"))) {
 		switch (c) {
 		case 'x':
 			sscanf(optarg,"%d,%d,%d",&fftdevno,&fftch,&fftmaxf);
@@ -623,15 +639,20 @@ int main( int argc, char **argv )
 		case 'n':
 			notch = atof(optarg);
 			break;
+		case 'a':
+			lpFreq = atof(optarg);
+			break;
+		case 'b':
+			hpFreq = atof(optarg);
+			break;
 		case 'p':
 			port = atof(optarg);
 			break;
 		case 't':
 			defaultTextStringForMissingExtData = optarg;
 			break;
-		case 'v':
-			printf("Version "VERSION"\n");
-			exit(1);
+		case 'i':
+			break;
 		case 'h':
 		default:
 		printf("%s usage:\n"
@@ -644,8 +665,9 @@ int main( int argc, char **argv )
                        "   -r <sampling rate for the data files> \n"
 		       "   -p <TCP port for receiving external data>\n"
 		       "   -t <default outp when external data hasn't been rec'd>\n"
-		       "   -x <device,channel,max_freq> gives the spectrum of this dev,channel,max frequency\n"
-		       "   -v prints version number\n"
+		       "   -x <device,channel,max_freq> gives the Fequency spectrum of this dev,channel,max frequency\n"
+		       "   -a lowpass frequency\n"
+		       "   -b highpass frequency\n"
 		       "   -h prints this help screen\n",
 		       argv[0]);
 		exit(1);
@@ -677,7 +699,9 @@ int main( int argc, char **argv )
 				  csv,
 				  fftdevno,
 				  fftch,
-				  fftmaxf
+				  fftmaxf,
+				  lpFreq,
+				  hpFreq
 		);
 
 	// show widget

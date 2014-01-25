@@ -1,7 +1,7 @@
 /**
  * comedirecord.h
- * (c) 2004-2013, Bernd Porr, no warranty, GNU-public license
- * BerndPorr@f2s.com
+ * (c) 2004-2014, Bernd Porr, no warranty, GNU-public license
+ * mail@berndporr.me.uk
  **/
 class ComediRecord;
 #ifndef COMEDIRECORD_H
@@ -29,10 +29,6 @@ class ComediRecord;
 // the larger the value the slower
 #define INERTIA_FOR_DC_DETECTION 1000
 
-#define HIGHPASS_FREQUENCY 1 // Hz
-
-#define LOWPASS_FREQUENCY 5 // Hz
-
 class ComediRecord : public QWidget
 {
 
@@ -53,7 +49,9 @@ public:
 		      int csv = 0,
 		      int fftdevnumber = -1,
 		      int fftchannel = -1,
-		      int fftmaxf = -1
+		      int fftmaxf = -1,
+		      float lpFreq = 10,
+		      float hpFreq = 1
 		);
 	
 	/**
