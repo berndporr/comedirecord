@@ -260,7 +260,6 @@ ComediRecord::ComediRecord( QWidget *parent,
 	controlLayout->addWidget(allChGroup);
 
 	// at least one should be active not to make the user nervous.
-	printf("Number of channels enabled = %d\n",nch_enabled);
 	if (nch_enabled==0)
 		channel[0][0]->setChannel( 0 );
 
