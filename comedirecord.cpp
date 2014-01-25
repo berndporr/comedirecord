@@ -55,6 +55,7 @@ protected:
 
 
 ComediRecord::ComediRecord( QWidget *parent, 
+			    int ignoreSettings,
 			    int nchannels,
 			    float notchF,
 			    int port,
@@ -192,8 +193,12 @@ ComediRecord::ComediRecord( QWidget *parent,
 			channel[n][i] = new Channel(channels);
 			char tmpCh[128];
 			sprintf(tmpCh,CHSETTING_FORMAT,n,i);
-			channel[n][i] -> setChannel(
-				settings.value(tmpCh,i).toInt() ); 
+			if (ignoreSettings) {
+				channel[n][i] -> setChannel( i );
+			} else {
+				channel[n][i] -> setChannel(
+					settings.value(tmpCh,i).toInt() );
+			}
 			if ( channel[n][i] -> isActive() )
 				nch_enabled++;
 			channel[n][i]->setStyleSheet(styleSheet);
@@ -362,7 +367,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	tbInfoTextEdit->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 	tbLayout->addWidget(tbInfoTextEdit);
 
-	tbResetPushButton = new QPushButton( "restart" );
+	tbResetPushButton = new QPushButton( "clear" );
 	tbResetPushButton->setStyleSheet("background-color: white;border-style:outset;border-width: 2px;border-color: black;font: bold 10px;padding: 4px;");
 	tbResetPushButton->setMaximumSize ( tbMetrics.width("restart ") ,  
 					  tbMetrics.height() );
@@ -594,7 +599,7 @@ int main( int argc, char **argv )
 	int fftdevno = -1;
 	int fftch = -1;
 	int fftmaxf = -1;
-	float lpFreq = 10;
+	float lpFreq = 20;
 	float hpFreq = 1;
 	int ignoreSettings = 0;
 	const char* defaultTextStringForMissingExtData = NULL;
@@ -617,6 +622,8 @@ int main( int argc, char **argv )
 		sampling_rate = settings.value("sampling_rate",1000).toInt();
 		first_dev_no = settings.value("first_dev_no",0).toInt();
 		notch = settings.value("notch",50).toFloat();
+		lpFreq = settings.value("lowpass",20).toFloat();
+		hpFreq = settings.value("highpass",1).toFloat();
 		csv = settings.value("csv",0).toInt();
 		settings.endGroup();
 	}
@@ -691,10 +698,13 @@ int main( int argc, char **argv )
 	settings.setValue("sampling_rate",sampling_rate);
 	settings.setValue("first_dev_no",first_dev_no);
 	settings.setValue("notch",notch);
+	settings.setValue("lowpass",lpFreq);
+	settings.setValue("highpass",hpFreq);
 	settings.setValue("csv",csv);
 	settings.endGroup();
 
 	ComediRecord comediRecord(0,
+				  ignoreSettings,
 				  num_of_channels,
 				  notch,
 				  port,

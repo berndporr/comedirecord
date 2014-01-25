@@ -37,7 +37,8 @@ public:
 /**
  * Constructor
  **/
-	ComediRecord( QWidget *parent, 
+	ComediRecord( QWidget *parent,
+		      int ignoreSettings = 0,
 		      int channels = 1, 
 		      float notch = 50.0,
 		      int port = 0,
