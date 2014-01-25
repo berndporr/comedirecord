@@ -45,7 +45,7 @@ FFTScope::FFTScope( ComediRecord *parent, int fft_buffer_size)
 	filled = 0;
 
 	nFreqSamples = round(((double)(comedirecord->comediScope->fftmaxfrequency))/
-			     (comedirecord->comediScope->sampling_rate/((double)buffer_size)));
+			     (comedirecord->comediScope->sampling_rate/((double)buffer_size)))/2;
 	nFreqSamples++;
 	if (nFreqSamples > (buffer_size/2)) {
 		nFreqSamples = (buffer_size/2);
@@ -97,7 +97,7 @@ void FFTScope::updateFFT()
 		double f = 1;
 		for (i = 0; i < nFreqSamples; i++)
 		{
-			f =  ((double)i)*comedirecord->comediScope->sampling_rate/((double)buffer_size);
+			f =  ((double)i)*comedirecord->comediScope->sampling_rate/((double)buffer_size)*2;
 			x[i] = f;
 			double a = out[i][0];
 			double b = out[i][1];
