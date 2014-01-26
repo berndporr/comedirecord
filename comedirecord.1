@@ -1,4 +1,4 @@
-.TH COMEDIRECORD "1" "May 2012" "comedirecord 1.24" "User Commands"
+.TH COMEDIRECORD "1" "Jan 2014" "comedirecord 1.27" "User Commands"
 .SH NAME
 comedirecord \- an oscilloscope for COMEDI
 .SH SYNOPSIS
@@ -9,14 +9,14 @@ A simple oscilloscope application which displays data from COMEDI
 DAQ cards. It can run with multiple idential cards and save the data
 in a single text file which then can be imported into OCTAVE, scilab,
 gnuplot, MATLAB and other data ploting applications.
-A mains notch filter and a DC filter can be
+A mains notch filter, a lowpass, a highpass and a DC filter can be
 used to improve the data being displayed. However
 the data is always saved unfiltered in its original form
 and at the sampling rate specified with
 the -r option. Comedirecord can
 also listen on a TCP port which allows the logging of additional
 information from external programs or just logging comments
-connected to telnet.
+connected via telnet.
 .TP
 \-i
 ignores last saved configuration and resets all settings to
