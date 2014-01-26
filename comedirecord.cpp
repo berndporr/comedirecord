@@ -38,7 +38,7 @@
 // config constants
 #define SETTINGS_GLOBAL "global"
 #define SETTINGS_CHANNELS "channelconfig"
-#define CHSETTING_FORMAT "dev%09d_ch%09d"
+#define CHSETTING_FORMAT "ch_mapping_dev%09d_ch%09d"
 #define USBDUX_STRING "USB-DUX"
 #define PROGRAM_NAME "comedirecord"
 
