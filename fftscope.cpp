@@ -97,11 +97,11 @@ void FFTScope::updateFFT()
 		double f = 1;
 		for (i = 0; i < nFreqSamples; i++)
 		{
-			f =  ((double)i)*comedirecord->comediScope->sampling_rate/((double)buffer_size)*2;
+			f =  ((double)i)*comedirecord->comediScope->sampling_rate/((double)buffer_size);
 			x[i] = f;
 			double a = out[i][0];
 			double b = out[i][1];
-			y[i] = sqrt(a*a+b*b);
+			y[i] = sqrt(a*a+b*b) / nFreqSamples;
 			if ((y[i]>yMax)&&(i>0)) yMax = y[i];
 		}
 		y[0]=0.0;
