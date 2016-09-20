@@ -40,8 +40,8 @@ What is needed?
 ---------------
 1) An up to date version of comedi and comedilib (which ships with ubuntu).
 See http://www.comedi.org or http://www.linux-usb-daq.co.uk.
-2) The QT4 library (shipped with many distros).
-3) IIR filter library available from http://www.linux-usb-daq.co.uk
+2) The QT5 library (shipped with many distros).
+3) IIR filter library available from https://github.com/berndporr/iir1
 
 How to compile?
 ---------------

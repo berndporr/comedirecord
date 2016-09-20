@@ -1,7 +1,7 @@
 /********************************************************************
  * comedirecord.cpp 
  * License: GNU, GPL
- * (c) 2004-2012, Bernd Porr
+ * (c) 2004-2016, Bernd Porr
  * No Warranty
  ********************************************************************/
 
@@ -216,7 +216,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 				 (int)(voltageMetrics.height()*1.1));
 			voltageTextEdit[n][i]->
 				setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff ); 
-			voltageTextEdit[n][i]->setReadOnly(TRUE);
+			voltageTextEdit[n][i]->setReadOnly(true);
 			voltageTextEdit[n][i]->setFont(voltageFont);
 			// voltageTextEdit[i]->setLineWidth(1);
 
@@ -275,13 +275,13 @@ ComediRecord::ComediRecord( QWidget *parent,
 	// notch filter
 	// create a group for the notch filter
 	QGroupBox* notchGroupBox = new QGroupBox();
-	notchGroupBox->setFlat(TRUE);
+	notchGroupBox->setFlat(true);
 	notchGroupBox->setStyleSheet(styleSheet);
 	QHBoxLayout *notchLayout = new QHBoxLayout();
 	char tmp[128];
 	sprintf(tmp,"%2.0fHz notch",notchF);
 	filterCheckbox=new QCheckBox( tmp );
-	filterCheckbox->setChecked( FALSE );
+	filterCheckbox->setChecked( false );
 	notchLayout->addWidget(filterCheckbox);
 	commentTextEdit=new QCommentTextEdit();
 	QFont commentFont("Courier",10);
@@ -332,7 +332,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	QGroupBox *tbgrp = new QGroupBox();
 	QHBoxLayout *tbLayout = new QHBoxLayout;
 	QFont tbFont("Courier",12);
-	tbFont.setBold(TRUE);
+	tbFont.setBold(true);
 	QFontMetrics tbMetrics(tbFont);
 
 	QLabel* tbLabel = new QLabel("Timebase:");
@@ -363,7 +363,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 	QFontMetrics metricsTb(tbFont);
 	tbInfoTextEdit->setMaximumHeight ( commentMetrics.height() * 1.5 );
 	tbInfoTextEdit->setMaximumWidth ( commentMetrics.width('X') * 13 );
-	tbInfoTextEdit->setReadOnly(TRUE);
+	tbInfoTextEdit->setReadOnly(true);
 	tbInfoTextEdit->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 	tbLayout->addWidget(tbInfoTextEdit);
 
