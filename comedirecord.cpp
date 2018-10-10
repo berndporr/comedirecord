@@ -489,6 +489,7 @@ void ComediRecord::enterFileName() {
 	dialog.setFileMode(QFileDialog::AnyFile);
 	dialog.setNameFilter(filters);
 	dialog.setViewMode(QFileDialog::Detail);
+	dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
 
         if (dialog.exec()) {
 		QString fileName = dialog.selectedFiles()[0];
