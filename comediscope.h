@@ -233,7 +233,7 @@ public:
     /**
      * notch filter
      **/
-    Iir::Butterworth::BandStop<IIRORDER>*** iirnotch;
+    Iir::RBJ::IIRNotch*** iirnotch;
 
     /**
      * comma separated?

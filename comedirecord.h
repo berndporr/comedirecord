@@ -1,6 +1,6 @@
 /**
  * comedirecord.h
- * (c) 2004-2014, Bernd Porr, no warranty, GNU-public license
+ * (c) 2004-2018, Bernd Porr, no warranty, GNU-public license
  * mail@berndporr.me.uk
  **/
 class ComediRecord;

@@ -5,8 +5,7 @@
 
 Lp::Lp(float samplingrate,float cutoff) : QCheckBox() {
 	lp = new Iir::Butterworth::LowPass<LPORDER>;
-	lp->setup (LPORDER,
-		   samplingrate, 
+	lp->setup (samplingrate, 
 		   cutoff);
 }
 

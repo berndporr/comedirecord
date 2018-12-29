@@ -5,8 +5,7 @@
 
 Hp::Hp(float samplingrate,float cutoff) : QCheckBox() {
 	hp = new Iir::Butterworth::HighPass<HPORDER>;
-	hp->setup (HPORDER, 
-		   samplingrate, 
+	hp->setup (samplingrate, 
 		   cutoff);
 }
 
