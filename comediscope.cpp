@@ -200,14 +200,14 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	}
 
 	// 50Hz or 60Hz mains notch filter
-	iirnotch = new Iir::RBJ::IIRNotch*[nComediDevices];
+	iirnotch = new Iir::Butterworth::BandStop<IIRORDER>*[nComediDevices];
 	assert( iirnotch != NULL );
 	adAvgBuffer = new float*[nComediDevices];
 	assert( adAvgBuffer != NULL );
 	daqData = new lsampl_t*[nComediDevices];
 	assert( daqData != NULL );
 	for(int devNo=0;devNo<nComediDevices;devNo++) {
-		iirnotch[devNo] = new Iir::RBJ::IIRNotch[channels_in_use];
+		iirnotch[devNo] = new Iir::Butterworth::BandStop<IIRORDER>[channels_in_use];
 		assert( iirnotch[devNo] != NULL );
 		// floating point buffer for plotting
 		adAvgBuffer[devNo]=new float[channels_in_use];
@@ -265,7 +265,7 @@ void ComediScope::setNotchFrequency(float f) {
 	}
 	for(int j=0;j<nComediDevices;j++) {
 		for(int i=0;i<channels_in_use;i++) {
-			iirnotch[j][i].setup(sampling_rate,f); 
+			iirnotch[j][i].setup(sampling_rate,f,BS_BANDWIDTH); 
 		}
 		notchFrequency = f;
 	}
@@ -298,7 +298,7 @@ void ComediScope::updateTime() {
 						  crange[n],
 						  maxdata[n]);
 			
-			sprintf(tmp,VOLT_FORMAT_STRING,phys);
+			sprintf(tmp,"" VOLT_FORMAT_STRING "",phys);
 			comediRecord->voltageTextEdit[n][i]->setText(tmp);
 		}
 	}

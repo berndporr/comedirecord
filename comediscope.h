@@ -1,6 +1,7 @@
 /**
  * comediscope.h
- * (c) 2004-2012 Bernd Porr, no warranty, GNU-public license
+ * (c) 2004-2018 Bernd Porr, mail@berndporr.me.u,
+ * no warranty, GNU-public license
  **/
 class ComediScope;
 #ifndef COMEDISCOPE_H
@@ -23,7 +24,9 @@ class ComediScope;
 
 #define MAX_DISP_X 4096 // max screen width
 
-#define IIRORDER 2
+#define IIRORDER 4
+
+#define BS_BANDWIDTH 2.5
 
 #define VOLT_FORMAT_STRING "%+.3f"
 
@@ -233,7 +236,7 @@ public:
     /**
      * notch filter
      **/
-    Iir::RBJ::IIRNotch** iirnotch;
+    Iir::Butterworth::BandStop<IIRORDER>** iirnotch;
 
     /**
      * comma separated?
