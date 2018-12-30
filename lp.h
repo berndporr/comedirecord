@@ -17,7 +17,7 @@ class Lp : public QCheckBox {
 	Lp(float samplingrate, float cutoff = 1);
 	
 private:
-	Iir::Butterworth::LowPass<LPORDER>* lp;
+	Iir::Butterworth::LowPass<LPORDER> lp;
 	
 public:
 	float filter(float v);

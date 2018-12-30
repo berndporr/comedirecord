@@ -17,7 +17,7 @@ class Hp : public QCheckBox {
 	Hp(float samplingrate, float cutoff = 1);
 	
 private:
-	Iir::Butterworth::HighPass<HPORDER>* hp;
+	Iir::Butterworth::HighPass<HPORDER> hp;
 	
 public:
 	float filter(float v);

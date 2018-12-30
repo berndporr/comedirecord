@@ -4,14 +4,13 @@
 #include<stdio.h>
 
 Hp::Hp(float samplingrate,float cutoff) : QCheckBox() {
-	hp = new Iir::Butterworth::HighPass<HPORDER>;
-	hp->setup (samplingrate, 
-		   cutoff);
+	hp.setup (samplingrate, 
+		  cutoff);
 }
 
 float Hp::filter (float v) {
 	if (checkState()==Qt::Checked) {
-		return hp->filter(v);
+		return hp.filter(v);
 	} else {
 		return v;
 	}

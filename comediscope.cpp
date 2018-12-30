@@ -200,22 +200,20 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 	}
 
 	// 50Hz or 60Hz mains notch filter
-	iirnotch = new Iir::RBJ::IIRNotch**[nComediDevices];
+	iirnotch = new Iir::RBJ::IIRNotch*[nComediDevices];
 	assert( iirnotch != NULL );
 	adAvgBuffer = new float*[nComediDevices];
 	assert( adAvgBuffer != NULL );
 	daqData = new lsampl_t*[nComediDevices];
 	assert( daqData != NULL );
 	for(int devNo=0;devNo<nComediDevices;devNo++) {
-		iirnotch[devNo] = new Iir::RBJ::IIRNotch*[channels_in_use];
+		iirnotch[devNo] = new Iir::RBJ::IIRNotch[channels_in_use];
 		assert( iirnotch[devNo] != NULL );
 		// floating point buffer for plotting
 		adAvgBuffer[devNo]=new float[channels_in_use];
 		assert( adAvgBuffer[devNo] != NULL );
 		for(int i=0;i<channels_in_use;i++) {
 			adAvgBuffer[devNo][i]=0;
-			iirnotch[devNo][i] = new Iir::RBJ::IIRNotch;
-			assert( iirnotch[devNo][i] != NULL );
 		}
 		// raw data buffer for saving the data
 		daqData[devNo] = new lsampl_t[channels_in_use];
@@ -267,7 +265,7 @@ void ComediScope::setNotchFrequency(float f) {
 	}
 	for(int j=0;j<nComediDevices;j++) {
 		for(int i=0;i<channels_in_use;i++) {
-			iirnotch[j][i]->setup(sampling_rate,f); 
+			iirnotch[j][i].setup(sampling_rate,f); 
 		}
 		notchFrequency = f;
 	}
@@ -528,7 +526,7 @@ void ComediScope::paintEvent( QPaintEvent * ) {
 					value = comediRecord->lp[n][i]->filter(value);
 					// remove 50Hz
 					if (comediRecord->filterCheckbox->checkState()==Qt::Checked) {
-						value=iirnotch[n][i]->filter(value);
+						value=iirnotch[n][i].filter(value);
 					}
 					if ((n==fftdevno) && (ch==fftch) &&
 					    (comediRecord->fftscope))

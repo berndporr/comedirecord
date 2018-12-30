@@ -233,7 +233,7 @@ public:
     /**
      * notch filter
      **/
-    Iir::RBJ::IIRNotch*** iirnotch;
+    Iir::RBJ::IIRNotch** iirnotch;
 
     /**
      * comma separated?
