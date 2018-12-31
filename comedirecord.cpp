@@ -33,7 +33,7 @@
 #include "comedirecord.h"
 
 // version number
-#define VERSION "1.24"
+#define VERSION "1.31"
 
 // config constants
 #define SETTINGS_GLOBAL "global"
@@ -209,7 +209,7 @@ ComediRecord::ComediRecord( QWidget *parent,
 			voltageTextEdit[n][i]->setFont(voltageFont);
 			char tmpVolt[128];
 			sprintf(tmpVolt,
-				" "VOLT_FORMAT_STRING" ",
+				VOLT_FORMAT_STRING,
 				comediScope->crange[n]->max);
 			voltageTextEdit[n][i]->setMaximumSize
 				(voltageMetrics.width(tmpVolt),
@@ -338,21 +338,23 @@ ComediRecord::ComediRecord( QWidget *parent,
 	QLabel* tbLabel = new QLabel("Timebase:");
 	tbLayout->addWidget(tbLabel);
 
-	tbIncPushButton = new QPushButton( "+" );
+	tbIncPushButton = new QPushButton( "slower" );
 
-	char tbStyle[]="background-color: white;border-style:outset;border-width: 2px;border-color: black;font: bold 20px;padding: 4px;";
+	char tbStyle[]="background-color: white;border-style:outset;border-width: 2px;border-color: black;font: bold 12px;padding: 4px;";
 	tbIncPushButton->setStyleSheet(tbStyle);
-	tbIncPushButton->setMaximumSize ( tbMetrics.width(" + ") ,  
-					  tbMetrics.height() );
+	const float s = 1.5;
+	const char c[] = "slower";
+	tbIncPushButton->setMaximumSize ( tbMetrics.width(c)*s ,  
+					  tbMetrics.height()*s );
 	tbIncPushButton->setFont(tbFont);
 	tbgrp->connect(tbIncPushButton, SIGNAL( clicked() ),
 		this, SLOT( incTbEvent() ) );
 	tbLayout->addWidget(tbIncPushButton);
 
-	tbDecPushButton = new QPushButton( "-" );
+	tbDecPushButton = new QPushButton( "faster" );
 	tbDecPushButton->setStyleSheet(tbStyle);
-	tbDecPushButton->setMaximumSize ( tbMetrics.width(" + ") ,  
-					  tbMetrics.height() );
+	tbDecPushButton->setMaximumSize ( tbMetrics.width(c)*s ,  
+					  tbMetrics.height()*s );
 	tbDecPushButton->setFont(tbFont);	
 	tbgrp->connect(tbDecPushButton, SIGNAL( clicked() ),
 		       this, SLOT( decTbEvent() ) );
