@@ -2,6 +2,8 @@
 
 An oscilloscope program for COMEDI
 
+![alt tag](screenshot.png)
+
 comedirecord is a simple program to record data from a
 comedi device and write the data to a file. Its
 philosophy is not to alter the data which is written
