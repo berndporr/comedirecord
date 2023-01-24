@@ -237,11 +237,7 @@ ComediScope::ComediScope( ComediRecord *comediRecordTmp,
 void ComediScope::startDAQ() {
 	for(int devNo=0;devNo<nComediDevices;devNo++) {
 		/* start the command */
-		int ret=comedi_command(dev[devNo],cmd[devNo]);
-		if(ret<0){
-			comedi_perror("comedi_command");
-			exit(1);
-		}
+		comedi_command(dev[devNo],cmd[devNo]);
 	}
 	startTimer( 50 );		// run continuous timer
 	counter->start( 500 );
