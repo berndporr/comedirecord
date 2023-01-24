@@ -66,4 +66,4 @@ and see if your username is added to the group `iocard`:
 iocard:x:125:my_user_name
 ```
 
-If it's not the case add yourself, save the file, close the terminate and re-open it.
+If it's not the case add yourself, save the file, close the terminal and re-open it.
