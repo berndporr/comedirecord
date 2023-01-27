@@ -1,8 +1,12 @@
 /**
  * comedirecord.h
- * (c) 2004-2018, Bernd Porr, no warranty, GNU-public license
+ * (c) 2004-2022, Bernd Porr, no warranty, GNU-public license
  * mail@berndporr.me.uk
  **/
+
+// version number
+#define VERSION "1.32"
+
 class ComediRecord;
 #ifndef COMEDIRECORD_H
 #define COMEDIRECORD_H

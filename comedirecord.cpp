@@ -32,9 +32,6 @@
 #include "comediscope.h"
 #include "comedirecord.h"
 
-// version number
-#define VERSION "1.31"
-
 // config constants
 #define SETTINGS_GLOBAL "global"
 #define SETTINGS_CHANNELS "channelconfig"

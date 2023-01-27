@@ -43,8 +43,14 @@ from the comedi device.
 
 ## Prerequisites
 
+Add the DSP repository:
 ```
-sudo apt install libqwt-qt5-dev qtdeclarative5-dev-tools libfftw3-dev iir1-dev
+sudo add-apt-repository ppa:berndporr/dsp`
+```
+
+Install the required packackes:
+```
+sudo apt install libqwt-qt5-dev qtdeclarative5-dev-tools libfftw3-dev iir1-dev libcomedi-dev
 ```
 
 ## Compilation
@@ -105,4 +111,4 @@ and see if your username is added to the group `iocard`:
 iocard:x:125:my_user_name
 ```
 
-If it's not the case add yourself, save the file, close the terminal and re-open it.
+If it's not the case add yourself, save the file and reboot.
