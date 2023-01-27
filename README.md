@@ -13,11 +13,11 @@ is always saved at the maximum sampling rate (default
 1kHz but can be changed with the "-r" parameter) 
 and unfiltered in a Python-friendly format.
 
-It has been designed for the USB-DUX sigma board but it
-should also run with other daq boards. The number of channels
-is set to the maximum number possible
-but can be changed by the commandline parameter -c to
-increase the overall sampling rate.
+It has been designed for the [USB-DUX sigma
+board](https://github.com/glasgowneuro/usbdux) but it should also run
+with other daq boards supported by comedi. The number of channels is
+set to the maximum number possible but can be changed by the
+commandline parameter -c to increase the overall sampling rate.
 
 A IIR notch filter has been implemented to filter out
 unwanted hum from the mains. This might be useful for 
