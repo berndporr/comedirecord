@@ -47,7 +47,7 @@ https://github.com/berndporr/iir1
 
 Install the required packackes:
 ```
-sudo apt install libqwt-qt5-dev libfftw3-dev libcomedi-dev qtbase5-dev qt5make
+sudo apt install libqwt-qt5-dev libfftw3-dev libcomedi-dev qtbase5-dev
 ```
 
 ## Compilation
